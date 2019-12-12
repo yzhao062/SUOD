@@ -1,11 +1,13 @@
-Supplementary material for **SUOD** (Toward **S**\calable **U**\nsupervised **O**\utlier **D**\etection)
-
-
-Yue Zhao, Xueying Ding, Jianing Yang, Haoping Bai, "Toward Scalable Unsupervised Anomaly Detection". 
-*Thirty-Fourth AAAI Conference on Artificial Intelligence Workshop*, 2020. **Submitted, under review**.
-
+Supplementary material for **SUOD** (Toward **S**\calable **U**\nsupervised **O**\utlier **D**\etection); **submitted, under review**.
 A preliminary version of paper can be accessed `here <https://www.andrew.cmu.edu/user/yuezhao2/papers/19-preprint-suod.pdf>`_.
-A scalable python implementation called **SUOD** will be released shortly. 
+A scalable python implementation will be released shortly. 
+
+::
+
+    Yue Zhao, Xueying Ding, Jianing Yang, Haoping Bai, "Toward Scalable Unsupervised Anomaly Detection". 
+    Thirty-Fourth AAAI Conference on Artificial Intelligence Workshop, 2020. 
+
+
 
 ------------
 

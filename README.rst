@@ -16,6 +16,14 @@ See the basic flowchart below for clarification. **SUOD** is a three-module acce
 
 ------------
 
+Reproduction Instructions
+_________________________
+
+All three modules can be executed separately and the demo codes are in /AAAI_Workshop/{M1_RP, M2_BPS, and M3_PSA}.
+For instance, you could navigate to /M1_RP/demo_random_projection.py. Demo codes all start with "demo_*.py".
+
+------------
+
 Abstract
 --------
 

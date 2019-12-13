@@ -12,6 +12,7 @@ See the basic flowchart below for clarification. **SUOD** is a three-module acce
 
 .. image:: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/basic_framework.png
    :target: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/basic_framework.png
+   :scale: 50
    :alt: SUOD Flowchart
 
 ------------

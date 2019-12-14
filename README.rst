@@ -1,4 +1,4 @@
-Supplementary material for **SUOD** (Toward **S**\calable **U**\nsupervised **O**\utlier **D**\etection)。
+Supplementary material for **SUOD** (Toward **S**\calable **U**\nsupervised **O**\utlier **D**\etection).
 
 A preliminary version of paper can be accessed `here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_. A scalable python implementation will be released shortly.
 The revised and extended version will be submitted to `KDD 2020 (ADS track) <https://www.kdd.org/kdd2020/>`_

@@ -1,4 +1,6 @@
-Supplementary material for **SUOD** (Toward **S**\calable **U**\nsupervised **O**\utlier **D**\etection).
+**SUOD** (Toward **S**\calable **U**\nsupervised **O**\utlier **D**\etection): an acceleration framework for large scale unsupervised outlier detector training and prediction.
+
+----
 
 A preliminary version of paper can be accessed `here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_. A scalable python implementation will be released shortly.
 The revised and extended version will be submitted to `KDD 2020 (ADS track) <https://www.kdd.org/kdd2020/>`_
@@ -9,14 +11,13 @@ citations to the following paper::
     @inproceedings{zhao2020suod,
       author  = {Zhao, Yue and Ding, Xueying and Yang, Jianing and Haoping Bai},
       title   = {{SUOD}: Toward Scalable Unsupervised Outlier Detection},
-      journal = {AAAI Workshop on Artificial Intelligence for Cyber Security ({AICS})},
+      journal = {Workshops at the Thirty-Fourth AAAI Conference on Artificial Intelligence},
       year    = {2020}
     }
 
 ::
 
-    Yue Zhao, Xueying Ding, Jianing Yang, Haoping Bai, "Toward Scalable Unsupervised Outlier Detection".
-    AAAI Workshop on Artificial Intelligence for Cyber Security (AICS), 2020.
+    Yue Zhao, Xueying Ding, Jianing Yang, Haoping Bai, "Toward Scalable Unsupervised Outlier Detection". Workshops at the Thirty-Fourth AAAI Conference on Artificial Intelligence, 2020.
 
 
 See the basic flowchart below for clarification. **SUOD** is a three-module acceleration framework for training and inferencing with a large number of unsupervised outlier detectors. Not all the modules are needed all the time---you may consider it as a LEGO system with great flexibility!

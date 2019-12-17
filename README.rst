@@ -3,6 +3,17 @@ Overview
 
 **SUOD** (Toward **S**\calable **U**\nsupervised **O**\utlier **D**\etection): an acceleration framework for large scale unsupervised outlier detector training and prediction.
 
+**Key question**: why are we doing this?
+
+The short answer is that anomaly detection is often formulated as an unsupervised problem as the ground truth is expensive to acquire in practice.
+Additionally, anomaly detection is an imbalanced learning task, which further complicates label acquisition.
+Practically speaking, analysts are inclined to build many diversified models and further combine them (sometimes with rule-based models)---
+this has become a standard process in risk industry like banks and insurance firms. However, **building a large number of unsupervised models are very costly or even infeasible on high-dimensional, large datasets**.
+
+SUOD is therefore proposed to alleviate, if not fully fix, this problem.
+The focus is **to accelerate the training and prediction while a large number of anomaly detectors are presented**.
+
+
 ----
 
 A preliminary version of paper can be accessed `here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_. A scalable python implementation will be released shortly.
@@ -95,7 +106,7 @@ Module III: Pseudo-Supervised Approximation
 ------------
 
 **More to come...**
-Last updated on Dec 12, 2019.
+Last updated on Dec 17, 2019.
 
 Feel free to star for the future update :)
 

@@ -140,11 +140,13 @@ assert (np.sum(n_estimators_list) == n_estimators_total)
 assert (rank_sum == np.sum(sum_check))
 
 n_jobs = min(effective_n_jobs(n_jobs), n_estimators_total)
-total_n_estimators = total_n_estimators = sum(n_estimators_list)
+total_n_estimators = sum(n_estimators_list)
 print(starts)
 
 start = time.time()
-all_results = Parallel(n_jobs=n_jobs, verbose=True)(
+# https://github.com/joblib/joblib/issues/806
+# max_nbytes can be dropped on other OS
+all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
     delayed(_parallel_build_estimators)(
         n_estimators_list[i],
         clfs_real[starts[i]:starts[i + 1]],
@@ -171,7 +173,9 @@ n_jobs, n_estimators, starts = _partition_estimators(len(clfs), n_jobs=n_jobs)
 total_n_estimators = sum(n_estimators)
 
 start = time.time()
-all_results = Parallel(n_jobs=n_jobs, verbose=True)(
+# https://github.com/joblib/joblib/issues/806
+# max_nbytes can be dropped on other OS
+all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
     delayed(_parallel_build_estimators)(
         n_estimators[i],
         clfs_real[starts[i]:starts[i + 1]],

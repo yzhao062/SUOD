@@ -71,6 +71,7 @@ def jl_fit_transform(X, objective_dim, method="basic"):
 def jl_transform(X, jl_transformer):
     X = check_array(X)
     jl_transformer = check_array(jl_transformer)
+
     if X.shape[1] != jl_transformer.shape[0]:
         ValueError("X and jl_transformer have different dimensions.")
     return np.dot(X, jl_transformer)

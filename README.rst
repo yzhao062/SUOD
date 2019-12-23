@@ -1,26 +1,25 @@
-Overview
---------
+SUOD: An Acceleration System for Large Scale Unsupervised Anomaly Detection
+===========================================================================
 
-**SUOD** (Toward **S**\calable **U**\nsupervised **O**\utlier **D**\etection): an acceleration framework for large scale unsupervised outlier detector training and prediction.
+**Deployment & Documentation & Stats**
 
-**Key question**: why are we doing this?
+.. image:: https://img.shields.io/pypi/v/suod.svg?color=brightgreen
+   :target: https://pypi.org/project/suod/
+   :alt: PyPI version
 
-The short answer is that anomaly detection is often formulated as an unsupervised problem since the ground truth is expensive to acquire in practice.
-Additionally, anomaly detection is an imbalanced learning task, which further complicates label acquisition.
-Practically speaking, analysts are inclined to build many diversified models and further combine them (sometimes with rule-based models)---this has become a standard process in risk industry,
-e.g., banks and insurance firms. However, **building a large number of unsupervised models are very costly or even infeasible on high-dimensional, large datasets**.
+**SUOD** (Toward **S**\calable **U**\nsupervised **O**\utlier **D**\etection) is an **acceleration framework for large scale unsupervised outlier detector training and prediction**.
+Notably, anomaly detection is often formulated as an unsupervised problem since the ground truth is expensive to acquire in practice.
+As a result, analysts often build many diversified models and further combine them (sometimes with rule-based models)---this has become a standard process in many industries to 
+offset the challenges of the data imbalance and unsupervised nature. However, **building a large number of unsupervised models are very costly or even infeasible on high-dimensional, large datasets**.
 
 SUOD is therefore proposed to alleviate, if not fully fix, this problem.
-The focus of SUOD is **to accelerate the training and prediction while a large number of anomaly detectors are presented**.
+The focus of SUOD is **to accelerate the training and prediction when a large number of anomaly detectors are presented**.
 
 
 ----
 
-A preliminary version of paper can be accessed `here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_. A scalable python implementation will be released shortly.
-The revised and extended version will be submitted to `KDD 2020 (ADS track) <https://www.kdd.org/kdd2020/>`_
 
-If you use SUOD in a scientific publication, we would appreciate
-citations to the following paper::
+If you use SUOD in a scientific publication, we would appreciate citations to the following paper::
 
     @inproceedings{zhao2020suod,
       author  = {Zhao, Yue and Ding, Xueying and Yang, Jianing and Haoping Bai},
@@ -33,6 +32,8 @@ citations to the following paper::
 
     Yue Zhao, Xueying Ding, Jianing Yang, Haoping Bai, "Toward Scalable Unsupervised Outlier Detection". Workshops at the Thirty-Fourth AAAI Conference on Artificial Intelligence, 2020.
 
+
+A preliminary version of paper can be accessed `here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_. The revised and extended version will be submitted to `KDD 2020 (ADS track) <https://www.kdd.org/kdd2020/>`_
 
 
 ------------
@@ -47,66 +48,54 @@ For instance, you could navigate to /M1_RP/demo_random_projection.py. Demo codes
 
 ------------
 
-Abstract
---------
 
-Outlier detection is a key field of machine learning for identifying abnormal data objects.
-Due to the high expense of acquiring ground truth, unsupervised models are often chosen in practice.
-To compensate for the unstable nature of unsupervised algorithms, practitioners from high-stakes fields like finance, health, and security, prefer to build a large number of models for further combination and analysis.
-However, this poses scalability challenges in high-dimensional large datasets.
-In this study, we propose a three-module acceleration framework called SUOD to expedite the training and prediction with a large number of unsupervised detection models.
-SUOD's Random Projection module can generate lower subspaces for high-dimensional datasets while reserving their distance relationship.
-Balanced Parallel Scheduling module can forecast the training and prediction cost of models with high confidence---so the task scheduler could assign nearly equal amount of taskload among workers for efficient parallelization.
-SUOD also comes with a Pseudo-supervised Approximation module, which can approximate fitted unsupervised models by lower time complexity supervised regressors for fast prediction on unseen data.
-It may be considered as an unsupervised model knowledge distillation process. Notably, all three modules are independent with great flexibility to "mix and match";
-a combination of modules can be chosen based on use cases. Extensive experiments on more than 30 benchmark datasets have shown the efficacy of SUOD, and a comprehensive future development plan is also presented.
+Installation
+^^^^^^^^^^^^
 
+It is recommended to use **pip** for installation. Please make sure
+**the latest version** is installed, as suod is updated frequently:
 
-System Overview
----------------
+.. code-block:: bash
 
-See the basic flowchart below for clarification. **SUOD** is a three-module acceleration framework for training and predicting with a large number of unsupervised outlier detectors.
-Not all the modules are needed all the time---you may consider it as a LEGO system with great flexibility! A more formal algorithm description is also provided below.
+   pip install suod            # normal install
+   pip install --upgrade suod  # or update if needed
+   pip install --pre suod      # or include pre-release version for new features
 
-.. image:: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/basic_framework.png
-   :target: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/basic_framework.png
-   :alt: SUOD Flowchart
+Alternatively, you could clone and run setup.py file:
+
+.. code-block:: bash
+
+   git clone https://github.com/yzhao062/suod.git
+   cd suod
+   pip install .
 
 
-.. image:: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/algorithm-suod.png
-   :target: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/algorithm-suod.png
-   :alt: SUOD Algorithm Design
+**Required Dependencies**\ :
 
 
-Module I: Random Projection
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-A widely used algorithm to alleviate the curse of dimensionality on high-dimensional data is the Johnson-Lindenstraus (JL) projection [#Johnson1984Extensions]_,
-although its use in outlier mining is still unexplored. JL projection is a simple compression scheme without heavy distortion on the Euclidean distances of the data. 
-Its built-in randomness is also useful for inducing diversity for outlier ensembles. 
-Despite, projection may be less useful or even detrimental for methods like Isolation Forests and HBOS that rely on subspace splitting. 
-Detailed proof and four JL variations (*basic*, *discrete*, *circulant*, and *toeplitz*) can be found in the paper.
-
-Module II: Balanced Parallel Scheduling
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+* Python 3.5, 3.6, or 3.7
+* joblib
+* matplotlib (**optional for running examples**)
+* numpy>=1.13
+* numba>=0.35
+* pyod
+* scipy>=0.19.1
+* scikit_learn>=0.19.1
 
 
-.. image:: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/flowchart-suod.png
-   :target: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/flowchart-suod.png
-   :alt: Flowchart of Balanced Parallel Scheduling
+**Note on Python 2**\ :
+The maintenance of Python 2.7 will be stopped by January 1, 2020 (see `official announcement <https://github.com/python/devguide/pull/344>`_).
+To be consistent with the Python change and suod's dependent libraries, e.g., scikit-learn,
+**suod only supports Python 3.5+** and we encourage you to use
+Python 3.5 or newer for the latest functions and bug fixes. More information can
+be found at `Moving to require Python 3 <https://python3statement.org/>`_.
 
-Module III: Pseudo-Supervised Approximation
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+----
 
-.. image:: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/ALL.png
-   :target: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/ALL.png
-   :alt: Comparison among unsupervised models and their pseudo-supervised counterparts
-
-------------
 
 **More to come...**
-Last updated on Dec 17, 2019.
+Last updated on Dec 23, 2019.
 
 Feel free to star for the future update :)
 

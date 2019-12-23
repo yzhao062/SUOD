@@ -146,6 +146,36 @@ y = mat['y']
 
 X = StandardScaler().fit_transform(X)
 
+
+# predict on the dataset and detection algorithm pairs
+idx_clf_mapping = {
+    1: 'ABOD',
+    2: 'CBLOF',
+    3: 'FeatureBagging',
+    4: 'HBOS',
+    5: 'IForest',
+    6: 'KNN',
+    7: 'LOF',
+    8: 'MCD',
+    9: 'OCSVM',
+    10: 'PCA',
+    11: 'UNK'
+}
+
+clf_idx_mapping = {
+    'ABOD': 1,
+    'CBLOF': 2,
+    'FeatureBagging': 3,
+    'HBOS': 4,
+    'IForest': 5,
+    'KNN': 6,
+    'LOF': 7,
+    'MCD': 8,
+    'OCSVM': 9,
+    'PCA': 10,
+    'UNK': 11
+}
+
 # initialize a set of anomaly detectors
 base_estimators = [
     LOF(n_neighbors=5), LOF(n_neighbors=15),
@@ -181,6 +211,7 @@ base_estimators = [
     KNN(n_neighbors=45),
     IForest(n_estimators=50),
     IForest(n_estimators=100),
+    LSCP(detector_list=[LOF(), LOF()])
 ]
 
 base_estimator_names = []
@@ -210,10 +241,14 @@ for i in range(n_estimators):
     except TypeError:
         print('Unknown detection algorithm.')
         clf_name = 'UNK'
-
-    # print(clf_name)
+        
+    if clf_name not in list(clf_idx_mapping):
+        # print(clf_name)
+        clf_name = 'UNK'
+    # build the estimator list
     base_estimator_names.append(clf_name)
 
+    # check whether the projection is needed
     if clf_name in rp_clf_list:
         rp_flag[i] = 1
     elif clf_name in rp_ng_clf_list:
@@ -222,6 +257,7 @@ for i in range(n_estimators):
         warnings.warn("{clf_name} does not have a predefined projection code. "
                       "RP disabled.".format(clf_name=clf_name))
 
+    
 if not proj_enabled:
     # revert back
     rp_flag = np.zeros([n_estimators, 1], dtype=int)
@@ -232,34 +268,7 @@ clf = joblib.load(os.path.join('saved_models', 'rf_predictor.joblib'))
 
 # TODO: there should be a seperate predictor for prediction cost
 
-# predict on the dataset and detection algorithm pairs
-idx_clf_mapping = {
-    1: 'ABOD',
-    2: 'CBLOF',
-    3: 'FeatureBagging',
-    4: 'HBOS',
-    5: 'IForest',
-    6: 'KNN',
-    7: 'LOF',
-    8: 'MCD',
-    9: 'OCSVM',
-    10: 'PCA',
-    11: 'UKN'
-}
 
-clf_idx_mapping = {
-    'ABOD': 1,
-    'CBLOF': 2,
-    'FeatureBagging': 3,
-    'HBOS': 4,
-    'IForest': 5,
-    'KNN': 6,
-    'LOF': 7,
-    'MCD': 8,
-    'OCSVM': 9,
-    'PCA': 10,
-    'UKN': 11
-}
 
 # convert base estimators to the digestable form
 clf_idx = np.asarray(list(map(clf_idx_mapping.get, base_estimator_names)))
@@ -461,3 +470,7 @@ approximators = []
 # unfold the fitted approximators
 for i in range(n_jobs):
     approximators.extend(all_approx_results[i])
+    
+#%% Second BPS for prediction
+
+    

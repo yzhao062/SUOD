@@ -1,5 +1,6 @@
 # %%
 import os
+import sys
 import warnings
 import time
 import numpy as np
@@ -35,11 +36,15 @@ from sklearn.metrics import roc_auc_score
 from combo.models.score_comb import majority_vote, maximization, average
 
 from sklearn.random_projection import johnson_lindenstrauss_min_dim
-from jl_projection import jl_fit_transform, jl_transform
+from suod.models.jl_projection import jl_fit_transform, jl_transform
 
 import warnings
 
 warnings.filterwarnings("ignore")
+# temporary solution for relative imports in case combo is not installed
+# if combo is installed, no need to use the following line
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
 
 
 def indices_to_one_hot(data, nb_classes):
@@ -92,8 +97,9 @@ def _parallel_predict(n_estimators, clfs, X, total_n_estimators,
 
     return pred
 
+
 def _parallel_decision_function(n_estimators, clfs, X, total_n_estimators,
-                      rp_flag, rp_transformers, verbose):
+                                rp_flag, rp_transformers, verbose):
     X = check_array(X)
 
     pred = []
@@ -131,7 +137,7 @@ def _partition_estimators(n_estimators, n_jobs):
 
 mat_file_list = [
     'cardio.mat',
-        # 'satellite.mat',
+    # 'satellite.mat',
     #    'satimage-2.mat',
     # 'mnist.mat',
 ]
@@ -139,13 +145,12 @@ mat_file_list = [
 mat_file = mat_file_list[0]
 mat_file_name = mat_file.replace('.mat', '')
 print("\n... Processing", mat_file_name, '...')
-mat = sp.io.loadmat(os.path.join('datasets', mat_file))
+mat = sp.io.loadmat(os.path.join('examples', 'datasets', mat_file))
 
 X = mat['X']
 y = mat['y']
 
 X = StandardScaler().fit_transform(X)
-
 
 # predict on the dataset and detection algorithm pairs
 idx_clf_mapping = {
@@ -241,7 +246,7 @@ for i in range(n_estimators):
     except TypeError:
         print('Unknown detection algorithm.')
         clf_name = 'UNK'
-        
+
     if clf_name not in list(clf_idx_mapping):
         # print(clf_name)
         clf_name = 'UNK'
@@ -257,17 +262,16 @@ for i in range(n_estimators):
         warnings.warn("{clf_name} does not have a predefined projection code. "
                       "RP disabled.".format(clf_name=clf_name))
 
-    
 if not proj_enabled:
     # revert back
     rp_flag = np.zeros([n_estimators, 1], dtype=int)
 ##############################################################################
 
 # load cost predictor
-clf = joblib.load(os.path.join('saved_models', 'rf_predictor.joblib'))
+clf = joblib.load(
+    os.path.join('suod', 'models', 'saved_models', 'bps_train.joblib'))
 
 # TODO: there should be a seperate predictor for prediction cost
-
 
 
 # convert base estimators to the digestable form
@@ -355,8 +359,8 @@ all_results_pred = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
 # unfold and generate the label matrix
 predicted_labels = np.zeros([X.shape[0], n_estimators])
 for i in range(n_jobs):
-    predicted_labels[:, starts[i]:starts[i + 1]] = np.asarray(all_results_pred[i]).T
-    
+    predicted_labels[:, starts[i]:starts[i + 1]] = np.asarray(
+        all_results_pred[i]).T
 
 print('Parallel Score Prediciting...')
 
@@ -374,9 +378,10 @@ all_results_scores = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
 # unfold and generate the label matrix
 predicted_scores = np.zeros([X.shape[0], n_estimators])
 for i in range(n_jobs):
-    predicted_scores[:, starts[i]:starts[i + 1]] = np.asarray(all_results_scores[i]).T
-    
-#%% Check point to see whether it is working
+    predicted_scores[:, starts[i]:starts[i + 1]] = np.asarray(
+        all_results_scores[i]).T
+
+# %% Check point to see whether it is working
 evaluate_print('majority vote', y, majority_vote(predicted_labels))
 evaluate_print('average', y, average(predicted_scores))
 evaluate_print('maximization', y, maximization(predicted_scores))
@@ -389,18 +394,16 @@ clf = IForest()
 clf.fit(X)
 evaluate_print('IForest', y, clf.decision_scores_)
 
-#%% Model Approximation
+# %% Model Approximation
 approx_clf_list = ['LOF', 'KNN', 'ABOD']
 approx_ng_clf_list = ['IForest', 'PCA', 'HBOS', 'ABOD']
 approx_enabled = True
-
 
 # build approx code
 # this can be a pre-defined list and directly supply to the system
 approx_flag = np.zeros([n_estimators, 1], dtype=int)
 # this can be supplied by the user
-approx_clf = RandomForestRegressor()
-
+approx_clf = RandomForestRegressor(n_estimators=100)
 
 # this may be combined with the first step
 for i in range(n_estimators):
@@ -420,15 +423,16 @@ for i in range(n_estimators):
     elif clf_name in approx_ng_clf_list:
         continue
     else:
-        warnings.warn("{clf_name} does not have a predefined approximation code. "
-                      "Approximation disabled.".format(clf_name=clf_name))
+        warnings.warn(
+            "{clf_name} does not have a predefined approximation code. "
+            "Approximation disabled.".format(clf_name=clf_name))
 
 if not approx_enabled:
     # revert back
     approx_flag = np.zeros([n_estimators, 1], dtype=int)
 
-
-n_jobs, n_estimators_list, starts = _partition_estimators(n_estimators, n_jobs=n_jobs)
+n_jobs, n_estimators_list, starts = _partition_estimators(n_estimators,
+                                                          n_jobs=n_jobs)
 
 
 def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
@@ -445,7 +449,7 @@ def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
             print("Building estimator %d of %d for this parallel run "
                   "(total %d)..." % (i + 1, n_estimators, total_n_estimators))
         if approx_flag[i] == 1:
-            
+
             pseudo_scores = estimator.decision_scores_
             # pseudo_scores = estimator.decision_function(X)
             approximater.fit(X, pseudo_scores)
@@ -455,11 +459,12 @@ def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
 
     return approximators
 
+
 all_approx_results = Parallel(n_jobs=n_jobs, verbose=True)(
     delayed(_parallel_approx_estimators)(
         n_estimators_list[i],
-        trained_estimators[starts[i]:starts[i + 1]], 
-        X, # if it is PyOD model, we do not need this
+        trained_estimators[starts[i]:starts[i + 1]],
+        X,  # if it is PyOD model, we do not need this
         n_estimators,
         approx_flag,
         approx_clf,
@@ -470,7 +475,7 @@ approximators = []
 # unfold the fitted approximators
 for i in range(n_jobs):
     approximators.extend(all_approx_results[i])
-    
-#%% Second BPS for prediction
 
-    
+# %% Second BPS for prediction
+
+# still build the rank sum by

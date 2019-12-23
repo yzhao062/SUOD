@@ -15,7 +15,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA as PCA_sklearn
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.utils import check_array
-from scipy.stats import rankdata
 
 from pyod.models.iforest import IForest
 from pyod.models.abod import ABOD
@@ -35,7 +34,9 @@ from sklearn.metrics import roc_auc_score
 
 from combo.models.score_comb import majority_vote, maximization, average
 
-from sklearn.random_projection import johnson_lindenstrauss_min_dim
+import suod.models.cost_predictor as cost_predictor
+from suod.models.balanced_parallel_scheduling import cost_forecast_train
+from suod.models.balanced_parallel_scheduling import balanced_scheduling
 from suod.models.jl_projection import jl_fit_transform, jl_transform
 
 import warnings
@@ -45,12 +46,6 @@ warnings.filterwarnings("ignore")
 # if combo is installed, no need to use the following line
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
-
-
-def indices_to_one_hot(data, nb_classes):
-    """Convert an iterable of indices to one-hot encoded labels."""
-    targets = np.array(data).reshape(-1)
-    return np.eye(nb_classes)[targets]
 
 
 def _parallel_train(n_estimators, clfs, X, total_n_estimators,
@@ -135,6 +130,7 @@ def _partition_estimators(n_estimators, n_jobs):
     return n_jobs, n_estimators_per_job.tolist(), [0] + starts.tolist()
 
 
+###############################################################################
 mat_file_list = [
     'cardio.mat',
     # 'satellite.mat',
@@ -151,35 +147,7 @@ X = mat['X']
 y = mat['y']
 
 X = StandardScaler().fit_transform(X)
-
-# predict on the dataset and detection algorithm pairs
-idx_clf_mapping = {
-    1: 'ABOD',
-    2: 'CBLOF',
-    3: 'FeatureBagging',
-    4: 'HBOS',
-    5: 'IForest',
-    6: 'KNN',
-    7: 'LOF',
-    8: 'MCD',
-    9: 'OCSVM',
-    10: 'PCA',
-    11: 'UNK'
-}
-
-clf_idx_mapping = {
-    'ABOD': 1,
-    'CBLOF': 2,
-    'FeatureBagging': 3,
-    'HBOS': 4,
-    'IForest': 5,
-    'KNN': 6,
-    'LOF': 7,
-    'MCD': 8,
-    'OCSVM': 9,
-    'PCA': 10,
-    'UNK': 11
-}
+##############################################################################
 
 # initialize a set of anomaly detectors
 base_estimators = [
@@ -237,7 +205,6 @@ rp_method = 'basic'
 # rp_method = 'circulant'
 # rp_method = 'toeplitz'
 
-
 for i in range(n_estimators):
 
     try:
@@ -247,7 +214,7 @@ for i in range(n_estimators):
         print('Unknown detection algorithm.')
         clf_name = 'UNK'
 
-    if clf_name not in list(clf_idx_mapping):
+    if clf_name not in list(cost_predictor.clf_idx_mapping):
         # print(clf_name)
         clf_name = 'UNK'
     # build the estimator list
@@ -266,62 +233,23 @@ if not proj_enabled:
     # revert back
     rp_flag = np.zeros([n_estimators, 1], dtype=int)
 ##############################################################################
-
-# load cost predictor
+# load cost predictor and forecast time
 clf = joblib.load(
     os.path.join('suod', 'models', 'saved_models', 'bps_train.joblib'))
 
-# TODO: there should be a seperate predictor for prediction cost
+time_cost_pred = cost_forecast_train(clf, X, base_estimator_names)
 
+n_estimators_list, starts, n_jobs = balanced_scheduling(time_cost_pred,
+                                                        n_estimators, n_jobs)
 
-# convert base estimators to the digestable form
-clf_idx = np.asarray(list(map(clf_idx_mapping.get, base_estimator_names)))
-
-X_detector_code = indices_to_one_hot(clf_idx - 1, 11)
-X_shape_code_s = np.array([X.shape[0], X.shape[1]]).reshape(1, 2)
-X_shape_code = np.repeat(X_shape_code_s, len(base_estimators), axis=0)
-#
-X_code = np.concatenate((X_shape_code, X_detector_code), axis=1)
-time_cost_pred = clf.predict(X_code)
-
-# Conduct Balanced Task Scheduling
-n_estimators_list = []  # track the number of estimators for each worker
-ranks = rankdata(time_cost_pred)
-rank_sum = np.sum(ranks)
-chunk_sum = rank_sum / n_jobs
-
-starts = [0]
-index_track = 0
-sum_check = []
-
-for i in range(len(ranks) + 1):
-    if np.sum(ranks[starts[index_track]:i]) >= chunk_sum:
-        starts.append(i)
-        index_track += 1
-starts.append(len(ranks))
-
-for j in range(n_jobs):
-    sum_check.append(np.sum(ranks[starts[j]:starts[j + 1]]))
-    print('Worker', j + 1, 'sum of ranks:', sum_check[j])
-    n_estimators_list.append(starts[j + 1] - starts[j])
-
-print()
-
-# Confirm the length of the estimators is consistent
-assert (np.sum(n_estimators_list) == n_estimators)
-assert (rank_sum == np.sum(sum_check))
-
-n_jobs = min(effective_n_jobs(n_jobs), n_estimators)
 print(starts)  # this is the list of being split
-
 start = time.time()
+
+print('Parallel Training...')
 
 # TODO: code cleanup. There is an existing bug for joblib on Windows:
 # https://github.com/joblib/joblib/issues/806
 # max_nbytes can be dropped on other OS
-
-print('Parallel Training...')
-
 all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
     delayed(_parallel_train)(
         n_estimators_list[i],

@@ -24,6 +24,35 @@ def indices_to_one_hot(data, nb_classes):
     return np.eye(nb_classes)[targets]
 
 
+idx_clf_mapping = {
+    1: 'ABOD',
+    2: 'CBLOF',
+    3: 'FeatureBagging',
+    4: 'HBOS',
+    5: 'IForest',
+    6: 'KNN',
+    7: 'LOF',
+    8: 'MCD',
+    9: 'OCSVM',
+    10: 'PCA',
+    11: 'UNK'
+}
+
+clf_idx_mapping = {
+    'ABOD': 1,
+    'CBLOF': 2,
+    'FeatureBagging': 3,
+    'HBOS': 4,
+    'IForest': 5,
+    'KNN': 6,
+    'LOF': 7,
+    'MCD': 8,
+    'OCSVM': 9,
+    'PCA': 10,
+    'UNK': 11
+}
+
+
 def build_cost_predictor(file_name, output_file):
     # read in the data file
     WS = pd.read_excel(os.path.join('saved_models', file_name),

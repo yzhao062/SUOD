@@ -7,6 +7,9 @@ SUOD: An Acceleration System for Large Scale Unsupervised Anomaly Detection
    :target: https://pypi.org/project/suod/
    :alt: PyPI version
 
+----
+
+
 **SUOD** (Toward **S**\calable **U**\nsupervised **O**\utlier **D**\etection) is an **acceleration framework for large scale unsupervised outlier detector training and prediction**.
 Notably, anomaly detection is often formulated as an unsupervised problem since the ground truth is expensive to acquire in practice.
 As a result, analysts often build many diversified models and further combine them (sometimes with rule-based models)---this has become a standard process in many industries to 
@@ -35,6 +38,7 @@ If you use SUOD in a scientific publication, we would appreciate citations to th
 
 A preliminary version of paper can be accessed `here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_. The revised and extended version will be submitted to `KDD 2020 (ADS track) <https://www.kdd.org/kdd2020/>`_
 
+[`Preprint <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_], [`slides <https://www.andrew.cmu.edu/user/yuezhao2/misc/10715-SUOD-Toward-Scalable-Unsupervised-Outlier-Detection.pdf>`_], [`AICS <http://aics.site/AICS2020/>`_]
 
 ------------
 
@@ -43,6 +47,8 @@ Reproduction Instructions
 
 All three modules can be **executed separately** and the demo codes are in /AAAI_Workshop/{M1_RP, M2_BPS, and M3_PSA}.
 For instance, you could navigate to /M1_RP/demo_random_projection.py. Demo codes all start with "demo_*.py".
+
+**A full example may be found in demo_full.py under the root directory.**
 
 **Production level code will be released soon---it will support PyPI installation with full documentation and example!**
 

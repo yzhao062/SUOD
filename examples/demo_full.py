@@ -34,7 +34,7 @@ from sklearn.metrics import roc_auc_score
 
 from combo.models.score_comb import majority_vote, maximization, average
 
-import suod.models.cost_predictor as cost_predictor
+from suod.models.random_projection import build_rp_codes
 from suod.models.balanced_parallel_scheduling import cost_forecast_train
 from suod.models.balanced_parallel_scheduling import balanced_scheduling
 from suod.models.jl_projection import jl_fit_transform, jl_transform
@@ -141,7 +141,7 @@ mat_file_list = [
 mat_file = mat_file_list[0]
 mat_file_name = mat_file.replace('.mat', '')
 print("\n... Processing", mat_file_name, '...')
-mat = sp.io.loadmat(os.path.join('examples', 'datasets', mat_file))
+mat = sp.io.loadmat(os.path.join('', 'datasets', mat_file))
 
 X = mat['X']
 y = mat['y']
@@ -187,7 +187,7 @@ base_estimators = [
     LSCP(detector_list=[LOF(), LOF()])
 ]
 
-base_estimator_names = []
+# base_estimator_names = []
 
 n_jobs = 6
 n_estimators = len(base_estimators)
@@ -197,45 +197,49 @@ rp_ng_clf_list = ['IForest', 'PCA', 'HBOS']
 proj_enabled = True
 objective_dim = 6
 
+rp_flag, base_estimator_names = build_rp_codes(n_estimators, base_estimators,
+                                               rp_clf_list, rp_ng_clf_list,
+                                               proj_enabled)
+
 # build RP code
 # this can be a pre-defined list and directly supply to the system
-rp_flag = np.zeros([n_estimators, 1], dtype=int)
-rp_method = 'basic'
-# rp_method = 'discrete'
-# rp_method = 'circulant'
-# rp_method = 'toeplitz'
-
-for i in range(n_estimators):
-
-    try:
-        clf_name = type(base_estimators[i]).__name__
-
-    except TypeError:
-        print('Unknown detection algorithm.')
-        clf_name = 'UNK'
-
-    if clf_name not in list(cost_predictor.clf_idx_mapping):
-        # print(clf_name)
-        clf_name = 'UNK'
-    # build the estimator list
-    base_estimator_names.append(clf_name)
-
-    # check whether the projection is needed
-    if clf_name in rp_clf_list:
-        rp_flag[i] = 1
-    elif clf_name in rp_ng_clf_list:
-        continue
-    else:
-        warnings.warn("{clf_name} does not have a predefined projection code. "
-                      "RP disabled.".format(clf_name=clf_name))
-
-if not proj_enabled:
-    # revert back
-    rp_flag = np.zeros([n_estimators, 1], dtype=int)
+# rp_flag = np.zeros([n_estimators, 1], dtype=int)
+# rp_method = 'basic'
+# # rp_method = 'discrete'
+# # rp_method = 'circulant'
+# # rp_method = 'toeplitz'
+#
+# for i in range(n_estimators):
+#
+#     try:
+#         clf_name = type(base_estimators[i]).__name__
+#
+#     except TypeError:
+#         print('Unknown detection algorithm.')
+#         clf_name = 'UNK'
+#
+#     if clf_name not in list(cost_predictor.clf_idx_mapping):
+#         # print(clf_name)
+#         clf_name = 'UNK'
+#     # build the estimator list
+#     base_estimator_names.append(clf_name)
+#
+#     # check whether the projection is needed
+#     if clf_name in rp_clf_list:
+#         rp_flag[i] = 1
+#     elif clf_name in rp_ng_clf_list:
+#         continue
+#     else:
+#         warnings.warn("{clf_name} does not have a predefined projection code. "
+#                       "RP disabled.".format(clf_name=clf_name))
+#
+# if not proj_enabled:
+#     # revert back
+#     rp_flag = np.zeros([n_estimators, 1], dtype=int)
 ##############################################################################
 # load cost predictor and forecast time
 clf = joblib.load(
-    os.path.join('suod', 'models', 'saved_models', 'bps_train.joblib'))
+    os.path.join('../suod', 'models', 'saved_models', 'bps_train.joblib'))
 
 time_cost_pred = cost_forecast_train(clf, X, base_estimator_names)
 
@@ -333,27 +337,27 @@ approx_flag = np.zeros([n_estimators, 1], dtype=int)
 # this can be supplied by the user
 approx_clf = RandomForestRegressor(n_estimators=100)
 
-# this may be combined with the first step
-for i in range(n_estimators):
-
-    try:
-        clf_name = type(base_estimators[i]).__name__
-
-    except TypeError:
-        print('Unknown detection algorithm.')
-        clf_name = 'UNK'
-
-    # print(clf_name)
-    base_estimator_names.append(clf_name)
-
-    if clf_name in approx_clf_list:
-        approx_flag[i] = 1
-    elif clf_name in approx_ng_clf_list:
-        continue
-    else:
-        warnings.warn(
-            "{clf_name} does not have a predefined approximation code. "
-            "Approximation disabled.".format(clf_name=clf_name))
+# # this may be combined with the first step
+# for i in range(n_estimators):
+#
+#     try:
+#         clf_name = type(base_estimators[i]).__name__
+#
+#     except TypeError:
+#         print('Unknown detection algorithm.')
+#         clf_name = 'UNK'
+#
+#     # print(clf_name)
+#     base_estimator_names.append(clf_name)
+#
+#     if clf_name in approx_clf_list:
+#         approx_flag[i] = 1
+#     elif clf_name in approx_ng_clf_list:
+#         continue
+#     else:
+#         warnings.warn(
+#             "{clf_name} does not have a predefined approximation code. "
+#             "Approximation disabled.".format(clf_name=clf_name))
 
 if not approx_enabled:
     # revert back

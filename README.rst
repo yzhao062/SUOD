@@ -36,8 +36,8 @@ If you use SUOD in a scientific publication, we would appreciate citations to th
     Yue Zhao, Xueying Ding, Jianing Yang, Haoping Bai, "Toward Scalable Unsupervised Outlier Detection". Workshops at the Thirty-Fourth AAAI Conference on Artificial Intelligence, 2020.
 
 
-A preliminary version of paper can be accessed `here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_. The revised and extended version will be submitted to `KDD 2020 (ADS track) <https://www.kdd.org/kdd2020/>`_
-
+A preliminary version of paper can be accessed `here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
+The revised and extended version will be submitted to `KDD 2020 (ADS track) <https://www.kdd.org/kdd2020/>`_.
 [`Preprint <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_], [`slides <https://www.andrew.cmu.edu/user/yuezhao2/misc/10715-SUOD-Toward-Scalable-Unsupervised-Outlier-Detection.pdf>`_], [`AICS <http://aics.site/AICS2020/>`_]
 
 ------------
@@ -101,7 +101,7 @@ be found at `Moving to require Python 3 <https://python3statement.org/>`_.
 
 
 **More to come...**
-Last updated on Dec 23, 2019.
+Last updated on Dec 28th, 2019.
 
 Feel free to star for the future update :)
 

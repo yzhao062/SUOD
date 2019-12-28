@@ -16,6 +16,19 @@ def indices_to_one_hot(data, nb_classes):
 
 
 def balanced_scheduling(time_cost_pred, n_estimators, n_jobs):
+    """Conduct balanced scheduling based on the sum of rank, for both train
+    and prediction.
+
+    Parameters
+    ----------
+    time_cost_pred
+    n_estimators
+    n_jobs
+
+    Returns
+    -------
+
+    """
     n_jobs = min(effective_n_jobs(n_jobs), n_estimators)
     # Conduct Balanced Task Scheduling
     n_estimators_list = []  # track the number of estimators for each worker
@@ -147,13 +160,31 @@ def _partition_estimators(n_estimators, n_jobs):
 
 def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
                                 approx_flag, approximator, verbose):
+    """
+
+    Parameters
+    ----------
+    n_estimators
+    clfs
+    X
+    total_n_estimators
+    approx_flag
+    approximator
+    verbose
+
+    Returns
+    -------
+
+    """
     X = check_array(X)
     # Build estimators
     approximators = []
 
+    #TODO: approximators should be able to be different
     for i in range(n_estimators):
-        # estimator = deepcopy(clfs[i])
         estimator = clfs[i]
+
+        # use the same type of approximator for all models
         approximater = deepcopy(approximator)
         if verbose > 1:
             print("Building estimator %d of %d for this parallel run "

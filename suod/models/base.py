@@ -4,7 +4,22 @@ from .cost_predictor import clf_idx_mapping
 
 
 def build_codes(n_estimators, base_estimators, clf_list, ng_clf_list,
-                proj_enabled):
+                flag_global):
+    """Core function for building codes for deciding whether enable random
+    projection and supervised approximation.
+
+    Parameters
+    ----------
+    n_estimators
+    base_estimators
+    clf_list
+    ng_clf_list
+    flag_global
+
+    Returns
+    -------
+
+    """
     base_estimator_names = []
     flags = np.zeros([n_estimators, 1], dtype=int)
 
@@ -33,7 +48,7 @@ def build_codes(n_estimators, base_estimators, clf_list, ng_clf_list,
                 "{clf_name} does not have a predefined code. "
                 "Code sets to 0.".format(clf_name=clf_name))
 
-    if not proj_enabled:
+    if not flag_global:
         # revert back
         flags = np.zeros([n_estimators, 1], dtype=int)
 

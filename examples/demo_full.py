@@ -114,6 +114,7 @@ rp_flag_global = True
 objective_dim = 6
 rp_method = 'discrete'
 
+# build flags for random projection
 rp_flags, base_estimator_names = build_codes(n_estimators, base_estimators,
                                              rp_clf_list, rp_ng_clf_list,
                                              rp_flag_global)
@@ -124,6 +125,7 @@ clf_train = joblib.load(
 
 time_cost_pred = cost_forecast_train(clf_train, X, base_estimator_names)
 
+# schedule the tasks
 n_estimators_list, starts, n_jobs = balanced_scheduling(time_cost_pred,
                                                         n_estimators, n_jobs)
 
@@ -149,16 +151,10 @@ all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
 
 print('Balanced Scheduling Total Train Time:', time.time() - start)
 
-
-trained_estimators = []
-jl_transformers = []
-
-# unfold the fitted models and the transformers
-for i in range(n_jobs):
-    trained_estimators.extend(all_results[i][0])
-    jl_transformers.extend(all_results[i][1])
-
-# trained_estimators = _unfold_parallel(all_results[i][0])
+# reformat and unfold the lists. Save the trained estimators and transformers
+all_results = list(map(list, zip(*all_results)))
+trained_estimators = _unfold_parallel(all_results[0], n_jobs)
+jl_transformers = _unfold_parallel(all_results[1], n_jobs)
 
 ###############################################################################
 # %% Model Approximation
@@ -195,11 +191,6 @@ all_approx_results = Parallel(n_jobs=n_jobs, verbose=True)(
     for i in range(n_jobs))
 
 print('Balanced Scheduling Total Test Time:', time.time() - start)
-
-# approximators = []
-# # unfold the fitted approximators
-# for i in range(n_jobs):
-#     approximators.extend(all_approx_results[i])
 
 approximators = _unfold_parallel(all_approx_results, n_jobs)
 

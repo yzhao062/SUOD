@@ -35,6 +35,7 @@ from suod.models.parallel_processes import _parallel_decision_function
 from suod.models.parallel_processes import _partition_estimators
 from suod.models.parallel_processes import _parallel_approx_estimators
 from suod.models.parallel_processes import balanced_scheduling
+from suod.models.utils.utility import _unfold_parallel
 
 # suppress warnings
 import warnings
@@ -60,6 +61,7 @@ y = mat['y']
 
 # standardize data to be digestible for most algorithms
 X = StandardScaler().fit_transform(X)
+
 ##############################################################################
 # initialize a set of anomaly detectors
 base_estimators = [
@@ -145,15 +147,18 @@ all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
         verbose=True)
     for i in range(n_jobs))
 
-print('Balanced Scheduling Total Time:', time.time() - start)
+print('Balanced Scheduling Total Train Time:', time.time() - start)
+
 
 trained_estimators = []
 jl_transformers = []
 
-# unfold the fitted models and the transformers 
+# unfold the fitted models and the transformers
 for i in range(n_jobs):
     trained_estimators.extend(all_results[i][0])
     jl_transformers.extend(all_results[i][1])
+
+# trained_estimators = _unfold_parallel(all_results[i][0])
 
 ###############################################################################
 # %% Model Approximation
@@ -175,22 +180,28 @@ approx_flags, base_estimator_names = build_codes(n_estimators, base_estimators,
 
 n_jobs, n_estimators_list, starts = _partition_estimators(n_estimators,
                                                           n_jobs=n_jobs)
+print(starts)  # this is the list of being split
+start = time.time()
 
 all_approx_results = Parallel(n_jobs=n_jobs, verbose=True)(
     delayed(_parallel_approx_estimators)(
         n_estimators_list[i],
         trained_estimators[starts[i]:starts[i + 1]],
-        X,  # if it is PyOD model, we do not need this
+        X,  # if it is a PyOD model, we do not need this
         n_estimators,
         approx_flags,
         approx_clf,
         verbose=True)
     for i in range(n_jobs))
 
-approximators = []
-# unfold the fitted approximators
-for i in range(n_jobs):
-    approximators.extend(all_approx_results[i])
+print('Balanced Scheduling Total Test Time:', time.time() - start)
+
+# approximators = []
+# # unfold the fitted approximators
+# for i in range(n_jobs):
+#     approximators.extend(all_approx_results[i])
+
+approximators = _unfold_parallel(all_approx_results, n_jobs)
 
 # %% Second BPS for prediction
 ###############################################################################

@@ -180,7 +180,7 @@ def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
     # Build estimators
     approximators = []
 
-    #TODO: approximators should be able to be different
+    #TODO: approximators can be different
     for i in range(n_estimators):
         estimator = clfs[i]
 

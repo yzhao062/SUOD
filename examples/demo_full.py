@@ -164,9 +164,7 @@ approx_flag_global = True
 
 # build approx code
 # this can be a pre-defined list and directly supply to the system
-approx_flags = np.zeros([n_estimators, 1], dtype=int)
 
-# this can be supplied by the user
 approx_clf = RandomForestRegressor(n_estimators=100)
 
 approx_flags, base_estimator_names = build_codes(n_estimators, base_estimators,

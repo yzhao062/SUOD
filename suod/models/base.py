@@ -26,9 +26,11 @@ from .cost_predictor import clf_idx_mapping
 from pyod.models.sklearn_base import _pprint
 from pyod.utils.utility import _get_sklearn_version
 
-from suod.models.parallel_processes import cost_forecast_train
+from suod.models.parallel_processes import cost_forecast_meta
 from suod.models.parallel_processes import balanced_scheduling
 from suod.models.parallel_processes import _parallel_fit
+from suod.models.parallel_processes import _parallel_predict
+from suod.models.parallel_processes import _parallel_decision_function
 from suod.models.parallel_processes import _partition_estimators
 from suod.models.parallel_processes import _parallel_approx_estimators
 from suod.models.utils.utility import _unfold_parallel
@@ -144,7 +146,7 @@ class SUOD(object):
             self.max_features_ = int(self.max_features * n_features)
 
         # build flags for random projection
-        self.rp_flags_, base_estimator_names = build_codes(
+        self.rp_flags_, _ = build_codes(
             self.n_estimators, self.base_estimators, self.rp_clf_list,
             self.rp_ng_clf_list, self.rp_flag_global)
 
@@ -152,21 +154,18 @@ class SUOD(object):
         # it is turned off
         if self.bps_flag:
             # load the pre-trained cost predictor to forecast the train cost
-            clf_train = joblib.load(
+            cost_predictor = joblib.load(
                 os.path.join('../suod', 'models', 'saved_models',
                              'bps_train.joblib'))
 
-            time_cost_pred = cost_forecast_train(clf_train, X,
-                                                 base_estimator_names)
+            time_cost_pred = cost_forecast_meta(cost_predictor, X,
+                                                self.base_estimator_names)
 
-            # schedule the tasks
-            # if no variation in forecasting time, then the split is equal.
-            # it is equivalent to simple parallel scheduling
+            # use BPS
             n_estimators_list, starts, n_jobs = balanced_scheduling(
                 time_cost_pred, self.n_estimators, self.n_jobs)
         else:
-            # TODO: decide what to do if BPS is disabled
-            # set time forecast to equal value
+            # use the default sklearn equal split
             n_estimators_list, starts, n_jobs = _partition_estimators(
                 self.n_estimators, self.n_jobs)
 
@@ -206,12 +205,11 @@ class SUOD(object):
         # todo: allow to use a list of scores for approximation, instead of
         # todo: decision_scores
 
-        self.approx_flags, base_estimator_names = build_codes(
-            self.n_estimators,
-            self.base_estimators,
-            self.approx_clf_list,
-            self.approx_ng_clf_list,
-            self.approx_flag_global)
+        self.approx_flags, _ = build_codes(self.n_estimators,
+                                           self.base_estimators,
+                                           self.approx_clf_list,
+                                           self.approx_ng_clf_list,
+                                           self.approx_flag_global)
 
         n_estimators_list, starts, n_jobs = _partition_estimators(
             self.n_estimators, n_jobs=self.n_jobs)
@@ -235,25 +233,6 @@ class SUOD(object):
         self.approximators = _unfold_parallel(all_approx_results, n_jobs)
         return self
 
-    def fit_predict(self, X, y=None):
-        """Fit estimator and predict on X. y is optional for unsupervised
-        methods.
-
-        Parameters
-        ----------
-        X : numpy array of shape (n_samples, n_features)
-            The input samples.
-
-        y : numpy array of shape (n_samples,), optional (default=None)
-            The ground truth of the input samples (labels).
-
-        Returns
-        -------
-        labels : numpy array of shape (n_samples,)
-            Class labels for each data sample.
-        """
-        pass
-
     def predict(self, X):
         """Predict the class labels for the provided data.
 
@@ -267,6 +246,125 @@ class SUOD(object):
         labels : numpy array of shape (n_samples,)
             Class labels for each data sample.
         """
+        X = check_array(X)
+        n_samples, n_features = X.shape[0], X.shape[1]
+
+        # decide whether bps is needed
+        # it is turned off
+        if self.bps_flag:
+            # load the pre-trained cost predictor to forecast the train cost
+            cost_predictor = joblib.load(
+                os.path.join('../suod', 'models', 'saved_models',
+                             'bps_train.joblib'))
+
+            time_cost_pred = cost_forecast_meta(cost_predictor, X,
+                                                self.base_estimator_names)
+
+            n_estimators_list, starts, n_jobs = balanced_scheduling(
+                time_cost_pred, self.n_estimators, self.n_jobs)
+        else:
+            # use simple equal split by sklearn
+            n_estimators_list, starts, n_jobs = _partition_estimators(
+                self.n_estimators, self.n_jobs)
+
+        # fit the base models
+        print('Parallel label prediction...')
+        start = time.time()
+
+        # TODO: code cleanup. There is an existing bug for joblib on Windows:
+        # https://github.com/joblib/joblib/issues/806
+        # max_nbytes can be dropped on other OS
+        all_results_pred = Parallel(n_jobs=n_jobs, max_nbytes=None,
+                                    verbose=True)(
+            delayed(_parallel_predict)(
+                n_estimators_list[i],
+                self.base_estimators[starts[i]:starts[i + 1]],
+                X,
+                self.n_estimators,
+                self.rp_flags[starts[i]:starts[i + 1]],
+                self.jl_transformers_[starts[i]:starts[i + 1]],
+                verbose=True)
+            for i in range(n_jobs))
+
+        print('Parallel Label Predicting without Approximators Total Time:',
+              time.time() - start)
+
+        # unfold and generate the label matrix
+        predicted_labels = np.zeros([n_samples, self.n_estimators])
+        for i in range(n_jobs):
+            predicted_labels[:, starts[i]:starts[i + 1]] = np.asarray(
+                all_results_pred[i]).T
+
+        return self
+
+    def decision_function(self, X):
+        """Predict raw anomaly scores of X using the fitted detectors.
+
+        The anomaly score of an input sample is computed based on the fitted
+        detector. For consistency, outliers are assigned with
+        higher anomaly scores.
+
+        Parameters
+        ----------
+        X : numpy array of shape (n_samples, n_features)
+            The input samples. Sparse matrices are accepted only
+            if they are supported by the base estimator.
+
+        Returns
+        -------
+        anomaly_scores : numpy array of shape (n_samples,)
+            The anomaly score of the input samples.
+        """
+        X = check_array(X)
+        n_samples, n_features = X.shape[0], X.shape[1]
+
+        # decide whether bps is needed
+        # it is turned off
+        if self.bps_flag:
+            # load the pre-trained cost predictor to forecast the train cost
+            cost_predictor = joblib.load(
+                os.path.join('../suod', 'models', 'saved_models',
+                             'bps_train.joblib'))
+
+            time_cost_pred = cost_forecast_meta(cost_predictor, X,
+                                                self.base_estimator_names)
+
+            n_estimators_list, starts, n_jobs = balanced_scheduling(
+                time_cost_pred, self.n_estimators, self.n_jobs)
+        else:
+            # use simple equal split by sklearn
+            n_estimators_list, starts, n_jobs = _partition_estimators(
+                self.n_estimators, self.n_jobs)
+
+        # fit the base models
+        print('Parallel score prediction...')
+        start = time.time()
+
+        # TODO: code cleanup. There is an existing bug for joblib on Windows:
+        # https://github.com/joblib/joblib/issues/806
+        # max_nbytes can be dropped on other OS
+        all_results_scores = Parallel(n_jobs=n_jobs, max_nbytes=None,
+                                      verbose=True)(
+            delayed(_parallel_decision_function)(
+                n_estimators_list[i],
+                self.base_estimators[starts[i]:starts[i + 1]],
+                X,
+                self.n_estimators,
+                self.rp_flags[starts[i]:starts[i + 1]],
+                self.jl_transformers_[starts[i]:starts[i + 1]],
+                verbose=True)
+            for i in range(n_jobs))
+
+        print('Parallel Score Prediction without Approximators Total Time:',
+              time.time() - start)
+
+        # unfold and generate the label matrix
+        predicted_scores = np.zeros([n_samples, self.n_estimators])
+        for i in range(n_jobs):
+            predicted_scores[:, starts[i]:starts[i + 1]] = np.asarray(
+                all_results_scores[i]).T
+
+        return self
 
     def predict_proba(self, X):
         """Return probability estimates for the test data X.

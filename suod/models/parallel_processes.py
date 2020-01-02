@@ -75,7 +75,7 @@ def _partition_estimators(n_estimators, n_jobs):
     return n_estimators_per_job.tolist(), [0] + starts.tolist(), n_jobs
 
 
-def cost_forecast_train(clf, X, base_estimator_names):
+def cost_forecast_meta(clf, X, base_estimator_names):
     # convert base estimators to the digestible form
     clf_idx = np.asarray(
         list(map(clf_idx_mapping.get, base_estimator_names)))

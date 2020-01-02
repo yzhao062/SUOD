@@ -28,7 +28,7 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
 
 from suod.models.base import build_codes
-from suod.models.parallel_processes import cost_forecast_train
+from suod.models.parallel_processes import cost_forecast_meta
 from suod.models.parallel_processes import _parallel_fit
 from suod.models.parallel_processes import _parallel_predict
 from suod.models.parallel_processes import _parallel_decision_function
@@ -123,7 +123,7 @@ rp_flags, base_estimator_names = build_codes(n_estimators, base_estimators,
 clf_train = joblib.load(
     os.path.join('../suod', 'models', 'saved_models', 'bps_train.joblib'))
 
-time_cost_pred = cost_forecast_train(clf_train, X, base_estimator_names)
+time_cost_pred = cost_forecast_meta(clf_train, X, base_estimator_names)
 
 # schedule the tasks
 n_estimators_list, starts, n_jobs = balanced_scheduling(time_cost_pred,
@@ -199,7 +199,7 @@ approximators = _unfold_parallel(all_approx_results, n_jobs)
 clf_prediction = joblib.load(
     os.path.join('../suod', 'models', 'saved_models', 'bps_prediction.joblib'))
 
-time_cost_pred = cost_forecast_train(clf_prediction, X, base_estimator_names)
+time_cost_pred = cost_forecast_meta(clf_prediction, X, base_estimator_names)
 
 # TODO: add a second-stage tuner for prediction stage
 

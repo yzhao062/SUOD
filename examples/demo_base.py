@@ -89,3 +89,5 @@ if __name__ == "__main__":
 
     model.fit(X)
     model.approximate(X)
+    model.predict(X)
+    model.decision_function(X)

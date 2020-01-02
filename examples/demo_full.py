@@ -29,7 +29,7 @@ sys.path.append(
 
 from suod.models.base import build_codes
 from suod.models.parallel_processes import cost_forecast_train
-from suod.models.parallel_processes import _parallel_train
+from suod.models.parallel_processes import _parallel_fit
 from suod.models.parallel_processes import _parallel_predict
 from suod.models.parallel_processes import _parallel_decision_function
 from suod.models.parallel_processes import _partition_estimators
@@ -138,7 +138,7 @@ print('Parallel Training...')
 # https://github.com/joblib/joblib/issues/806
 # max_nbytes can be dropped on other OS
 all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
-    delayed(_parallel_train)(
+    delayed(_parallel_fit)(
         n_estimators_list[i],
         base_estimators[starts[i]:starts[i + 1]],
         X,
@@ -172,7 +172,7 @@ approx_flags, base_estimator_names = build_codes(n_estimators, base_estimators,
                                                  approx_ng_clf_list,
                                                  approx_flag_global)
 
-n_jobs, n_estimators_list, starts = _partition_estimators(n_estimators,
+n_estimators_list, starts, n_jobs = _partition_estimators(n_estimators,
                                                           n_jobs=n_jobs)
 print(starts)  # this is the list of being split
 start = time.time()

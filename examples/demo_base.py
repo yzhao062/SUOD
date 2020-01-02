@@ -29,40 +29,63 @@ sys.path.append(
 
 from suod.models.base import SUOD
 
-base_estimators = [
-    LOF(n_neighbors=5), LOF(n_neighbors=15),
-    LOF(n_neighbors=25), LOF(n_neighbors=35),
-    LOF(n_neighbors=45),
-    HBOS(),
-    PCA(),
-    OCSVM(),
-    KNN(n_neighbors=5), KNN(n_neighbors=15),
-    KNN(n_neighbors=25), KNN(n_neighbors=35),
-    KNN(n_neighbors=45),
-    IForest(n_estimators=50),
-    IForest(n_estimators=100),
-    LOF(n_neighbors=5), LOF(n_neighbors=15),
-    LOF(n_neighbors=25), LOF(n_neighbors=35),
-    LOF(n_neighbors=45),
-    HBOS(),
-    PCA(),
-    OCSVM(),
-    KNN(n_neighbors=5), KNN(n_neighbors=15),
-    KNN(n_neighbors=25), KNN(n_neighbors=35),
-    KNN(n_neighbors=45),
-    IForest(n_estimators=50),
-    IForest(n_estimators=100),
-    LOF(n_neighbors=5), LOF(n_neighbors=15),
-    LOF(n_neighbors=25), LOF(n_neighbors=35),
-    LOF(n_neighbors=45),
-    HBOS(),
-    PCA(),
-    OCSVM(),
-    KNN(n_neighbors=5), KNN(n_neighbors=15),
-    KNN(n_neighbors=25), KNN(n_neighbors=35),
-    KNN(n_neighbors=45),
-    IForest(n_estimators=50),
-    IForest(n_estimators=100),
-    LSCP(detector_list=[LOF(), LOF()])
-]
-model = SUOD(base_estimators=base_estimators)
+if __name__ == "__main__":
+    base_estimators = [
+        LOF(n_neighbors=5), LOF(n_neighbors=15),
+        LOF(n_neighbors=25), LOF(n_neighbors=35),
+        LOF(n_neighbors=45),
+        HBOS(),
+        PCA(),
+        OCSVM(),
+        KNN(n_neighbors=5), KNN(n_neighbors=15),
+        KNN(n_neighbors=25), KNN(n_neighbors=35),
+        KNN(n_neighbors=45),
+        IForest(n_estimators=50),
+        IForest(n_estimators=100),
+        LOF(n_neighbors=5), LOF(n_neighbors=15),
+        LOF(n_neighbors=25), LOF(n_neighbors=35),
+        LOF(n_neighbors=45),
+        HBOS(),
+        PCA(),
+        OCSVM(),
+        KNN(n_neighbors=5), KNN(n_neighbors=15),
+        KNN(n_neighbors=25), KNN(n_neighbors=35),
+        KNN(n_neighbors=45),
+        IForest(n_estimators=50),
+        IForest(n_estimators=100),
+        LOF(n_neighbors=5), LOF(n_neighbors=15),
+        LOF(n_neighbors=25), LOF(n_neighbors=35),
+        LOF(n_neighbors=45),
+        HBOS(),
+        PCA(),
+        OCSVM(),
+        KNN(n_neighbors=5), KNN(n_neighbors=15),
+        KNN(n_neighbors=25), KNN(n_neighbors=35),
+        KNN(n_neighbors=45),
+        IForest(n_estimators=50),
+        IForest(n_estimators=100),
+        LSCP(detector_list=[LOF(), LOF()])
+    ]
+    model = SUOD(base_estimators=base_estimators, n_jobs=6, bps_flag=True)
+
+    # load files
+    mat_file_list = [
+        'cardio.mat',
+        # 'satellite.mat',
+        # 'satimage-2.mat',
+        # 'mnist.mat',
+    ]
+
+    mat_file = mat_file_list[0]
+    mat_file_name = mat_file.replace('.mat', '')
+    print("\n... Processing", mat_file_name, '...')
+    mat = sp.io.loadmat(os.path.join('', 'datasets', mat_file))
+
+    X = mat['X']
+    y = mat['y']
+
+    # standardize data to be digestible for most algorithms
+    X = StandardScaler().fit_transform(X)
+
+    model.fit(X)
+    model.approximate(X)

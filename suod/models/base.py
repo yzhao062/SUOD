@@ -1,25 +1,40 @@
 # Author: Yue Zhao <zhaoy@cmu.edu>
 # License: BSD 2 clause
+import os
+import sys
+import time
 
 import warnings
 from collections import defaultdict
-from abc import ABC, abstractmethod
+import numbers
 
 import numpy as np
 from numpy import percentile
 from scipy.special import erf
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.utils import column_or_1d
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.multiclass import check_classification_targets
+from sklearn.utils import check_array
+
+import joblib
+from joblib import Parallel, delayed
+
 from .cost_predictor import clf_idx_mapping
 
 from pyod.models.sklearn_base import _pprint
 from pyod.utils.utility import _get_sklearn_version
 
+from suod.models.parallel_processes import cost_forecast_train
+from suod.models.parallel_processes import balanced_scheduling
+from suod.models.parallel_processes import _parallel_fit
+from suod.models.parallel_processes import _partition_estimators
+from suod.models.parallel_processes import _parallel_approx_estimators
+from suod.models.utils.utility import _unfold_parallel
+
 import warnings
 from collections import defaultdict
-from abc import ABC, abstractmethod
 
 if _get_sklearn_version() > 20:
     from inspect import signature
@@ -27,7 +42,7 @@ else:
     from sklearn.externals.funcsigs import signature
 
 
-class SUOD(ABC):
+class SUOD(object):
     """Abstract class for all combination classes.
 
     Parameters
@@ -42,8 +57,10 @@ class SUOD(ABC):
     """
 
     def __init__(self, base_estimators, n_jobs=None, rp_clf_list=None,
-                 rp_ng_clf_list=None, rp_flag_global=False, objective_dim=0.5,
-                 rp_method='basic'):
+                 rp_ng_clf_list=None, rp_flag_global=True, max_features=0.5,
+                 rp_method='basic', bps_flag=False, approx_clf_list=None,
+                 approx_ng_clf_list=None, approx_flag_global=False,
+                 approx_clf=None, verbose=False):
 
         assert (isinstance(base_estimators, (list)))
         if len(base_estimators) < 2:
@@ -51,12 +68,24 @@ class SUOD(ABC):
         self.base_estimators = base_estimators
         self.n_estimators = len(base_estimators)
         self.rp_flag_global = rp_flag_global
+        self.max_features = max_features
+        self.rp_method = rp_method
+        self.bps_flag = bps_flag
+        self.verbose = verbose
+        self.approx_clf_list = approx_clf_list
+        self.approx_ng_clf_list = approx_ng_clf_list
+        self.approx_flag_global = approx_flag_global
+        if approx_clf is not None:
+            self.approx_clf = approx_clf
+        else:
+            self.approx_clf = RandomForestRegressor(n_estimators=100)
 
         if n_jobs is None:
             self.n_jobs = 1
         else:
             self.n_jobs = n_jobs
 
+        # validate random projection list
         if rp_clf_list is None:
             # the algorithms that should be be using random projection
             self.rp_clf_list = ['LOF', 'KNN', 'ABOD']
@@ -68,6 +97,19 @@ class SUOD(ABC):
             self.rp_ng_clf_list = ['IForest', 'PCA', 'HBOS']
         else:
             self.rp_ng_clf_list = rp_ng_clf_list
+
+        # validate model approximation list
+        if approx_clf_list is None:
+            # the algorithms that should be be using random projection
+            self.approx_clf_list = ['LOF', 'KNN', 'ABOD']
+        else:
+            self.approx_clf_list = approx_clf_list
+
+        if approx_ng_clf_list is None:
+            # the algorithms that should be be using random projection
+            self.approx_ng_clf_list = ['IForest', 'PCA', 'HBOS', 'ABOD']
+        else:
+            self.approx_ng_clf_list = approx_ng_clf_list
 
         # build flags for random projection
         self.rp_flags, self.base_estimator_names = build_codes(
@@ -92,9 +134,106 @@ class SUOD(ABC):
         -------
         self
         """
-        pass
+        X = check_array(X)
+        n_samples, n_features = X.shape[0], X.shape[1]
 
-    # todo: make sure fit then predict is equivalent to fit_predict
+        # Validate max_features for random projection
+        if isinstance(self.max_features, (numbers.Integral, np.integer)):
+            self.max_features_ = self.max_features
+        else:  # float
+            self.max_features_ = int(self.max_features * n_features)
+
+        # build flags for random projection
+        self.rp_flags_, base_estimator_names = build_codes(
+            self.n_estimators, self.base_estimators, self.rp_clf_list,
+            self.rp_ng_clf_list, self.rp_flag_global)
+
+        # decide whether bps is needed
+        # it is turned off
+        if self.bps_flag:
+            # load the pre-trained cost predictor to forecast the train cost
+            clf_train = joblib.load(
+                os.path.join('../suod', 'models', 'saved_models',
+                             'bps_train.joblib'))
+
+            time_cost_pred = cost_forecast_train(clf_train, X,
+                                                 base_estimator_names)
+
+            # schedule the tasks
+            # if no variation in forecasting time, then the split is equal.
+            # it is equivalent to simple parallel scheduling
+            n_estimators_list, starts, n_jobs = balanced_scheduling(
+                time_cost_pred, self.n_estimators, self.n_jobs)
+        else:
+            # TODO: decide what to do if BPS is disabled
+            # set time forecast to equal value
+            n_estimators_list, starts, n_jobs = _partition_estimators(
+                self.n_estimators, self.n_jobs)
+
+        # fit the base models
+        print('Parallel Training...')
+        start = time.time()
+
+        # TODO: code cleanup. There is an existing bug for joblib on Windows:
+        # https://github.com/joblib/joblib/issues/806
+        # max_nbytes can be dropped on other OS
+        all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
+            delayed(_parallel_fit)(
+                n_estimators_list[i],
+                self.base_estimators[starts[i]:starts[i + 1]],
+                X,
+                self.n_estimators,
+                self.rp_flags[starts[i]:starts[i + 1]],
+                self.max_features_,
+                self.rp_method,
+                verbose=self.verbose)
+            for i in range(n_jobs))
+
+        print('Balanced Scheduling Total Train Time:', time.time() - start)
+
+        # reformat and unfold the lists. Save the trained estimators and transformers
+        all_results = list(map(list, zip(*all_results)))
+
+        # overwrite estimators
+        self.base_estimators = _unfold_parallel(all_results[0], n_jobs)
+        self.jl_transformers_ = _unfold_parallel(all_results[1], n_jobs)
+
+        return self
+
+    def approximate(self, X):
+
+        # todo: X may be optional
+        # todo: allow to use a list of scores for approximation, instead of
+        # todo: decision_scores
+
+        self.approx_flags, base_estimator_names = build_codes(
+            self.n_estimators,
+            self.base_estimators,
+            self.approx_clf_list,
+            self.approx_ng_clf_list,
+            self.approx_flag_global)
+
+        n_estimators_list, starts, n_jobs = _partition_estimators(
+            self.n_estimators, n_jobs=self.n_jobs)
+
+        print(starts)  # this is the list of being split
+        start = time.time()
+
+        all_approx_results = Parallel(n_jobs=n_jobs, verbose=True)(
+            delayed(_parallel_approx_estimators)(
+                n_estimators_list[i],
+                self.base_estimators[starts[i]:starts[i + 1]],
+                X,  # if it is a PyOD model, we do not need this
+                self.n_estimators,
+                self.approx_flags,
+                self.approx_clf,
+                verbose=True)
+            for i in range(n_jobs))
+
+        print('Balanced Scheduling Total Test Time:', time.time() - start)
+
+        self.approximators = _unfold_parallel(all_approx_results, n_jobs)
+        return self
 
     def fit_predict(self, X, y=None):
         """Fit estimator and predict on X. y is optional for unsupervised
@@ -128,7 +267,6 @@ class SUOD(ABC):
         labels : numpy array of shape (n_samples,)
             Class labels for each data sample.
         """
-        pass
 
     def predict_proba(self, X):
         """Return probability estimates for the test data X.
@@ -220,7 +358,6 @@ class SUOD(ABC):
 
         check_is_fitted(self, ['decision_scores_', 'threshold_', 'labels_'])
         train_scores = self.decision_scores_
-
         test_scores = self.decision_function(X)
 
         probs = np.zeros([X.shape[0], int(self._classes)])
@@ -289,56 +426,6 @@ class SUOD(ABC):
 
             print(self.weights)
         return self
-
-    def build_codes(object):
-        """Core function for building codes for deciding whether enable random
-        projection and supervised approximation.
-
-        Parameters
-        ----------
-        n_estimators
-        base_estimators
-        clf_list
-        ng_clf_list
-        flag_global
-
-        Returns
-        -------
-
-        """
-        base_estimator_names = []
-        flags = np.zeros([n_estimators, 1], dtype=int)
-
-        for i in range(n_estimators):
-
-            try:
-                clf_name = type(base_estimators[i]).__name__
-
-            except TypeError:
-                print('Unknown detection algorithm.')
-                clf_name = 'UNK'
-
-            if clf_name not in list(clf_idx_mapping):
-                # print(clf_name)
-                clf_name = 'UNK'
-            # build the estimator list
-            base_estimator_names.append(clf_name)
-
-            # check whether the projection is needed
-            if clf_name in clf_list:
-                flags[i] = 1
-            elif clf_name in ng_clf_list:
-                continue
-            else:
-                warnings.warn(
-                    "{clf_name} does not have a predefined code. "
-                    "Code sets to 0.".format(clf_name=clf_name))
-
-        if not flag_global:
-            # revert back
-            flags = np.zeros([n_estimators, 1], dtype=int)
-
-        return flags, base_estimator_names
 
     def __len__(self):
         """Returns the number of estimators in the ensemble."""

@@ -4,6 +4,7 @@ import numpy as np
 from scipy.stats import rankdata
 from joblib import effective_n_jobs
 from sklearn.utils import check_array
+from sklearn.utils.validation import check_is_fitted
 
 from .cost_predictor import clf_idx_mapping
 from .jl_projection import jl_fit_transform, jl_transform
@@ -60,6 +61,20 @@ def balanced_scheduling(time_cost_pred, n_estimators, n_jobs):
     return n_estimators_list, starts, n_jobs
 
 
+def _partition_estimators(n_estimators, n_jobs):
+    """Private function used to partition estimators between jobs."""
+    # Compute the number of jobs
+    n_jobs = min(effective_n_jobs(n_jobs), n_estimators)
+
+    # Partition estimators between jobs
+    n_estimators_per_job = np.full(n_jobs, n_estimators // n_jobs,
+                                   dtype=np.int)
+    n_estimators_per_job[:n_estimators % n_jobs] += 1
+    starts = np.cumsum(n_estimators_per_job)
+
+    return n_estimators_per_job.tolist(), [0] + starts.tolist(), n_jobs
+
+
 def cost_forecast_train(clf, X, base_estimator_names):
     # convert base estimators to the digestible form
     clf_idx = np.asarray(
@@ -75,8 +90,8 @@ def cost_forecast_train(clf, X, base_estimator_names):
     return time_cost_pred
 
 
-def _parallel_train(n_estimators, clfs, X, total_n_estimators,
-                    rp_flags, objective_dim, rp_method, verbose):
+def _parallel_fit(n_estimators, clfs, X, total_n_estimators,
+                  rp_flags, objective_dim, rp_method, verbose):
     X = check_array(X)
     # Build estimators
     estimators = []
@@ -155,7 +170,7 @@ def _partition_estimators(n_estimators, n_jobs):
     n_estimators_per_job[:n_estimators % n_jobs] += 1
     starts = np.cumsum(n_estimators_per_job)
 
-    return n_jobs, n_estimators_per_job.tolist(), [0] + starts.tolist()
+    return n_estimators_per_job.tolist(), [0] + starts.tolist(), n_jobs
 
 
 def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
@@ -180,9 +195,11 @@ def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
     # Build estimators
     approximators = []
 
-    #TODO: approximators can be different
+    # TODO: approximators can be different
     for i in range(n_estimators):
         estimator = clfs[i]
+
+        check_is_fitted(estimator, ['decision_scores_'])
 
         # use the same type of approximator for all models
         approximater = deepcopy(approximator)

@@ -6,6 +6,8 @@ from joblib import effective_n_jobs
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
+from pyod.utils.utility import score_to_label
+
 from .cost_predictor import clf_idx_mapping
 from .jl_projection import jl_fit_transform, jl_transform
 
@@ -115,8 +117,9 @@ def _parallel_fit(n_estimators, clfs, X, total_n_estimators,
     return estimators, rp_transformers
 
 
-def _parallel_predict(n_estimators, clfs, X, total_n_estimators,
-                      rp_flags, rp_transformers, verbose):
+def _parallel_predict(n_estimators, clfs, approximators, X, total_n_estimators,
+                      rp_flags, rp_transformers, approx_flags, contamination,
+                      verbose):
     X = check_array(X)
 
     pred = []
@@ -126,18 +129,32 @@ def _parallel_predict(n_estimators, clfs, X, total_n_estimators,
             print("predicting with estimator %d of %d for this parallel run "
                   "(total %d)..." % (i + 1, n_estimators, total_n_estimators))
 
+        # if the random projection is needed
         if rp_flags[i] == 1:
             X_scaled = jl_transform(X, rp_transformers[i])
-            pred.append(estimator.predict(X_scaled))
 
         else:
-            pred.append(estimator.predict(X))
+            X_scaled = X
+
+        # turn approximator scores to labels by outlier
+        # todo: decide whether the approximation should happen on the reduced
+        # space or the original space. For now, it is on the original space
+        if approx_flags[i] == 1:
+            predicted_labels = score_to_label(
+                approximators[i].predict(X),
+                outliers_fraction=contamination)
+
+        else:
+            predicted_labels = estimator.predict(X_scaled)
+
+        pred.append(predicted_labels)
 
     return pred
 
 
-def _parallel_decision_function(n_estimators, clfs, X, total_n_estimators,
-                                rp_flags, rp_transformers, verbose):
+def _parallel_decision_function(n_estimators, clfs, approximators, X,
+                                total_n_estimators, rp_flags, rp_transformers,
+                                approx_flags, verbose):
     X = check_array(X)
 
     pred = []
@@ -147,12 +164,22 @@ def _parallel_decision_function(n_estimators, clfs, X, total_n_estimators,
             print("predicting with estimator %d of %d for this parallel run "
                   "(total %d)..." % (i + 1, n_estimators, total_n_estimators))
 
+        # if the random projection is needed
         if rp_flags[i] == 1:
             X_scaled = jl_transform(X, rp_transformers[i])
-            pred.append(estimator.decision_function(X_scaled))
 
         else:
-            pred.append(estimator.decision_function(X))
+            X_scaled = X
+
+        # turn approximator scores to labels by outlier
+        # todo: decide whether the approximation should happen on the reduced
+        # space or the original space. For now, it is on the original space
+        if approx_flags[i] == 1:
+            predicted_scores = approximators[i].predict(X)
+        else:
+            predicted_scores = estimator.decision_function(X_scaled)
+
+        pred.append(predicted_scores)
 
     return pred
 
@@ -174,16 +201,17 @@ def _partition_estimators(n_estimators, n_jobs):
 
 
 def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
-                                approx_flag, approximator, verbose):
+                                approx_flags, approximator, verbose):
     """
-
+    # todo: decide whether the approximation should happen on the reduced
+    # space or the original space. For now, it is on the original space.
     Parameters
     ----------
     n_estimators
     clfs
     X
     total_n_estimators
-    approx_flag
+    approx_flags
     approximator
     verbose
 
@@ -200,18 +228,19 @@ def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
         estimator = clfs[i]
 
         check_is_fitted(estimator, ['decision_scores_'])
-
-        # use the same type of approximator for all models
-        approximater = deepcopy(approximator)
         if verbose > 1:
             print("Building estimator %d of %d for this parallel run "
                   "(total %d)..." % (i + 1, n_estimators, total_n_estimators))
-        if approx_flag[i] == 1:
 
+        if approx_flags[i] == 1:
             pseudo_scores = estimator.decision_scores_
             # pseudo_scores = estimator.decision_function(X)
-            approximater.fit(X, pseudo_scores)
-            approximators.append(approximater)
+            # use the same type of approximator for all models
+            base_approximater = deepcopy(approximator)
+            base_approximater.fit(X, pseudo_scores)
+
+            approximators.append(base_approximater)
+
         else:
             approximators.append(None)
 

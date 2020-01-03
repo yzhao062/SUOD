@@ -58,11 +58,11 @@ class SUOD(object):
         process may be skipped.
     """
 
-    def __init__(self, base_estimators, n_jobs=None, rp_clf_list=None,
-                 rp_ng_clf_list=None, rp_flag_global=True, max_features=0.5,
-                 rp_method='basic', bps_flag=False, approx_clf_list=None,
-                 approx_ng_clf_list=None, approx_flag_global=False,
-                 approx_clf=None, verbose=False):
+    def __init__(self, base_estimators, contamination=0.05, n_jobs=None,
+                 rp_clf_list=None, rp_ng_clf_list=None, rp_flag_global=True,
+                 max_features=0.5, rp_method='basic', bps_flag=False,
+                 approx_clf_list=None, approx_ng_clf_list=None,
+                 approx_flag_global=True, approx_clf=None, verbose=False):
 
         assert (isinstance(base_estimators, (list)))
         if len(base_estimators) < 2:
@@ -77,6 +77,8 @@ class SUOD(object):
         self.approx_clf_list = approx_clf_list
         self.approx_ng_clf_list = approx_ng_clf_list
         self.approx_flag_global = approx_flag_global
+        self.contamination = contamination
+
         if approx_clf is not None:
             self.approx_clf = approx_clf
         else:
@@ -223,7 +225,7 @@ class SUOD(object):
                 self.base_estimators[starts[i]:starts[i + 1]],
                 X,  # if it is a PyOD model, we do not need this
                 self.n_estimators,
-                self.approx_flags,
+                self.approx_flags[starts[i]:starts[i + 1]],
                 self.approx_clf,
                 verbose=True)
             for i in range(n_jobs))
@@ -279,10 +281,13 @@ class SUOD(object):
             delayed(_parallel_predict)(
                 n_estimators_list[i],
                 self.base_estimators[starts[i]:starts[i + 1]],
+                self.approximators[starts[i]:starts[i + 1]],
                 X,
                 self.n_estimators,
                 self.rp_flags[starts[i]:starts[i + 1]],
                 self.jl_transformers_[starts[i]:starts[i + 1]],
+                self.approx_flags[starts[i]:starts[i + 1]],
+                self.contamination,
                 verbose=True)
             for i in range(n_jobs))
 
@@ -295,7 +300,7 @@ class SUOD(object):
             predicted_labels[:, starts[i]:starts[i + 1]] = np.asarray(
                 all_results_pred[i]).T
 
-        return self
+        return predicted_labels
 
     def decision_function(self, X):
         """Predict raw anomaly scores of X using the fitted detectors.
@@ -337,8 +342,9 @@ class SUOD(object):
                 self.n_estimators, self.n_jobs)
 
         # fit the base models
-        print('Parallel score prediction...')
-        start = time.time()
+        if self.verbose:
+            print('Parallel score prediction...')
+            start = time.time()
 
         # TODO: code cleanup. There is an existing bug for joblib on Windows:
         # https://github.com/joblib/joblib/issues/806
@@ -348,15 +354,19 @@ class SUOD(object):
             delayed(_parallel_decision_function)(
                 n_estimators_list[i],
                 self.base_estimators[starts[i]:starts[i + 1]],
+                self.approximators[starts[i]:starts[i + 1]],
                 X,
                 self.n_estimators,
                 self.rp_flags[starts[i]:starts[i + 1]],
                 self.jl_transformers_[starts[i]:starts[i + 1]],
+                self.approx_flags[starts[i]:starts[i + 1]],
                 verbose=True)
             for i in range(n_jobs))
 
-        print('Parallel Score Prediction without Approximators Total Time:',
-              time.time() - start)
+        # fit the base models
+        if self.verbose:
+            print('Parallel Score Prediction without Approximators '
+                  'Total Time:', time.time() - start)
 
         # unfold and generate the label matrix
         predicted_scores = np.zeros([n_samples, self.n_estimators])
@@ -364,166 +374,7 @@ class SUOD(object):
             predicted_scores[:, starts[i]:starts[i + 1]] = np.asarray(
                 all_results_scores[i]).T
 
-        return self
-
-    def predict_proba(self, X):
-        """Return probability estimates for the test data X.
-
-        Parameters
-        ----------
-        X : numpy array of shape (n_samples, n_features)
-            The input samples.
-
-        Returns
-        -------
-        p : numpy array of shape (n_samples,)
-            The class probabilities of the input samples.
-            Classes are ordered by lexicographic order.
-        """
-        pass
-
-    def _process_decision_scores(self):
-        """Internal function to calculate key attributes for outlier detection
-        combination tasks.
-
-        - threshold_: used to decide the binary label
-        - labels_: binary labels of training data
-
-        Returns
-        -------
-        self
-        """
-
-        self.threshold_ = percentile(self.decision_scores_,
-                                     100 * (1 - self.contamination))
-        self.labels_ = (self.decision_scores_ > self.threshold_).astype(
-            'int').ravel()
-
-        # calculate for predict_proba()
-
-        self._mu = np.mean(self.decision_scores_)
-        self._sigma = np.std(self.decision_scores_)
-
-        return self
-
-    def _detector_predict(self, X):
-        """Internal function to predict if a particular sample is an outlier or not.
-
-        Parameters
-        ----------
-        X : numpy array of shape (n_samples, n_features)
-            The input samples.
-
-        Returns
-        -------
-        outlier_labels : numpy array of shape (n_samples,)
-            For each observation, tells whether or not
-            it should be considered as an outlier according to the
-            fitted model. 0 stands for inliers and 1 for outliers.
-        """
-
-        check_is_fitted(self, ['decision_scores_', 'threshold_', 'labels_'])
-
-        pred_score = self.decision_function(X)
-        return (pred_score > self.threshold_).astype('int').ravel()
-
-    def _detector_predict_proba(self, X, proba_method='linear'):
-        """Predict the probability of a sample being outlier. Two approaches
-        are possible:
-
-        1. simply use Min-max conversion to linearly transform the outlier
-           scores into the range of [0,1]. The model must be
-           fitted first.
-        2. use unifying scores, see :cite:`kriegel2011interpreting`.
-
-        Parameters
-        ----------
-        X : numpy array of shape (n_samples, n_features)
-            The input samples.
-
-        proba_method : str, optional (default='linear')
-            Probability conversion method. It must be one of
-            'linear' or 'unify'.
-
-        Returns
-        -------
-        outlier_labels : numpy array of shape (n_samples,)
-            For each observation, tells whether or not
-            it should be considered as an outlier according to the
-            fitted model. Return the outlier probability, ranging
-            in [0,1].
-        """
-
-        check_is_fitted(self, ['decision_scores_', 'threshold_', 'labels_'])
-        train_scores = self.decision_scores_
-        test_scores = self.decision_function(X)
-
-        probs = np.zeros([X.shape[0], int(self._classes)])
-        if proba_method == 'linear':
-            scaler = MinMaxScaler().fit(train_scores.reshape(-1, 1))
-            probs[:, 1] = scaler.transform(
-                test_scores.reshape(-1, 1)).ravel().clip(0, 1)
-            probs[:, 0] = 1 - probs[:, 1]
-            return probs
-
-        elif proba_method == 'unify':
-            # turn output into probability
-            pre_erf_score = (test_scores - self._mu) / (
-                    self._sigma * np.sqrt(2))
-            erf_score = erf(pre_erf_score)
-            probs[:, 1] = erf_score.clip(0, 1).ravel()
-            probs[:, 0] = 1 - probs[:, 1]
-            return probs
-        else:
-            raise ValueError(proba_method,
-                             'is not a valid probability conversion method')
-
-    def _set_n_classes(self, y):
-        """Set the number of classes if `y` is presented.
-
-        Parameters
-        ----------
-        y : numpy array of shape (n_samples,)
-            Ground truth.
-
-        Returns
-        -------
-        self
-        """
-
-        self._classes = 2  # default as binary classification
-        if y is not None:
-            check_classification_targets(y)
-            self._classes = len(np.unique(y))
-
-        return self
-
-    def _set_weights(self, weights):
-        """Internal function to set estimator weights.
-
-        Parameters
-        ----------
-        weights : numpy array of shape (n_estimators,)
-            Estimator weights. May be used after the alignment.
-
-        Returns
-        -------
-        self
-
-        """
-
-        if weights is None:
-            self.weights = np.ones([1, self.n_base_estimators_])
-        else:
-            self.weights = column_or_1d(weights).reshape(1, len(weights))
-            assert (self.weights.shape[1] == self.n_base_estimators_)
-
-            # adjust probability by a factor for integrity （added to 1）
-            adjust_factor = self.weights.shape[1] / np.sum(weights)
-            self.weights = self.weights * adjust_factor
-
-            print(self.weights)
-        return self
+        return predicted_scores
 
     def __len__(self):
         """Returns the number of estimators in the ensemble."""

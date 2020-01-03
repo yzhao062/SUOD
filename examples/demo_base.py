@@ -30,45 +30,8 @@ sys.path.append(
 from suod.models.base import SUOD
 
 if __name__ == "__main__":
-    base_estimators = [
-        LOF(n_neighbors=5), LOF(n_neighbors=15),
-        LOF(n_neighbors=25), LOF(n_neighbors=35),
-        LOF(n_neighbors=45),
-        HBOS(),
-        PCA(),
-        OCSVM(),
-        KNN(n_neighbors=5), KNN(n_neighbors=15),
-        KNN(n_neighbors=25), KNN(n_neighbors=35),
-        KNN(n_neighbors=45),
-        IForest(n_estimators=50),
-        IForest(n_estimators=100),
-        LOF(n_neighbors=5), LOF(n_neighbors=15),
-        LOF(n_neighbors=25), LOF(n_neighbors=35),
-        LOF(n_neighbors=45),
-        HBOS(),
-        PCA(),
-        OCSVM(),
-        KNN(n_neighbors=5), KNN(n_neighbors=15),
-        KNN(n_neighbors=25), KNN(n_neighbors=35),
-        KNN(n_neighbors=45),
-        IForest(n_estimators=50),
-        IForest(n_estimators=100),
-        LOF(n_neighbors=5), LOF(n_neighbors=15),
-        LOF(n_neighbors=25), LOF(n_neighbors=35),
-        LOF(n_neighbors=45),
-        HBOS(),
-        PCA(),
-        OCSVM(),
-        KNN(n_neighbors=5), KNN(n_neighbors=15),
-        KNN(n_neighbors=25), KNN(n_neighbors=35),
-        KNN(n_neighbors=45),
-        IForest(n_estimators=50),
-        IForest(n_estimators=100),
-        LSCP(detector_list=[LOF(), LOF()])
-    ]
-    model = SUOD(base_estimators=base_estimators, n_jobs=6, bps_flag=True)
-
-    # load files
+    
+# load files
     mat_file_list = [
         'cardio.mat',
         # 'satellite.mat',
@@ -86,8 +49,77 @@ if __name__ == "__main__":
 
     # standardize data to be digestible for most algorithms
     X = StandardScaler().fit_transform(X)
+    
+    contamination = y.sum()/len(y)
+
+    base_estimators = [
+        LOF(n_neighbors=5, contamination=contamination),
+        LOF(n_neighbors=15, contamination=contamination),
+        LOF(n_neighbors=25, contamination=contamination),
+        LOF(n_neighbors=35, contamination=contamination),
+        LOF(n_neighbors=45, contamination=contamination),
+        HBOS(contamination=contamination),
+        PCA(contamination=contamination),
+        OCSVM(contamination=contamination),
+        KNN(n_neighbors=5, contamination=contamination),
+        KNN(n_neighbors=15, contamination=contamination),
+        KNN(n_neighbors=25, contamination=contamination),
+        KNN(n_neighbors=35, contamination=contamination),
+        KNN(n_neighbors=45, contamination=contamination),
+        IForest(n_estimators=50, contamination=contamination),
+        IForest(n_estimators=100, contamination=contamination),
+        LOF(n_neighbors=5, contamination=contamination),
+        LOF(n_neighbors=15, contamination=contamination),
+        LOF(n_neighbors=25, contamination=contamination),
+        LOF(n_neighbors=35, contamination=contamination),
+        LOF(n_neighbors=45, contamination=contamination),
+        HBOS(contamination=contamination),
+        PCA(contamination=contamination),
+        OCSVM(contamination=contamination),
+        KNN(n_neighbors=5, contamination=contamination),
+        KNN(n_neighbors=15, contamination=contamination),
+        KNN(n_neighbors=25, contamination=contamination),
+        KNN(n_neighbors=35, contamination=contamination),
+        KNN(n_neighbors=45, contamination=contamination),
+        IForest(n_estimators=50, contamination=contamination),
+        IForest(n_estimators=100, contamination=contamination),
+        LOF(n_neighbors=5, contamination=contamination),
+        LOF(n_neighbors=15, contamination=contamination),
+        LOF(n_neighbors=25, contamination=contamination),
+        LOF(n_neighbors=35, contamination=contamination),
+        LOF(n_neighbors=45, contamination=contamination),
+        HBOS(contamination=contamination),
+        PCA(contamination=contamination),
+        OCSVM(contamination=contamination),
+        KNN(n_neighbors=5, contamination=contamination),
+        KNN(n_neighbors=15, contamination=contamination),
+        KNN(n_neighbors=25, contamination=contamination),
+        KNN(n_neighbors=35, contamination=contamination),
+        KNN(n_neighbors=45, contamination=contamination),
+        IForest(n_estimators=50, contamination=contamination),
+        IForest(n_estimators=100, contamination=contamination),
+        LSCP(detector_list=[LOF(contamination=contamination),
+                            LOF(contamination=contamination)])
+    ]
+    
+    
+    model = SUOD(base_estimators=base_estimators, n_jobs=6, bps_flag=True, 
+                 contamination=contamination, approx_flag_global=False)
 
     model.fit(X)
     model.approximate(X)
-    model.predict(X)
-    model.decision_function(X)
+    predicted_labels = model.predict(X)
+    predicted_scores = model.decision_function(X)
+
+    # %%
+    evaluate_print('majority vote', y, majority_vote(predicted_labels))
+    evaluate_print('average', y, average(predicted_scores))
+    evaluate_print('maximization', y, maximization(predicted_scores))
+
+    clf = LOF()
+    clf.fit(X)
+    evaluate_print('LOF', y, clf.decision_scores_)
+
+    clf = IForest()
+    clf.fit(X)
+    evaluate_print('IForest', y, clf.decision_scores_)

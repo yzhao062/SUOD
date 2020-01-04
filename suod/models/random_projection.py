@@ -1,6 +1,6 @@
 import numpy as np
 import warnings
-from .cost_predictor import clf_idx_mapping
+from .parallel_processes import clf_idx_mapping
 
 
 def build_rp_codes(n_estimators, base_estimators, rp_clf_list, rp_ng_clf_list,

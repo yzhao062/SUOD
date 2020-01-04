@@ -8,7 +8,6 @@ from sklearn.utils.validation import check_is_fitted
 
 from pyod.utils.utility import score_to_label
 
-from .cost_predictor import clf_idx_mapping
 from .jl_projection import jl_fit_transform, jl_transform
 
 
@@ -246,3 +245,31 @@ def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
             approximators.append(None)
 
     return approximators
+
+
+idx_clf_mapping = {
+    1: 'ABOD',
+    2: 'CBLOF',
+    3: 'FeatureBagging',
+    4: 'HBOS',
+    5: 'IForest',
+    6: 'KNN',
+    7: 'LOF',
+    8: 'MCD',
+    9: 'OCSVM',
+    10: 'PCA',
+    11: 'UNK'
+}
+clf_idx_mapping = {
+    'ABOD': 1,
+    'CBLOF': 2,
+    'FeatureBagging': 3,
+    'HBOS': 4,
+    'IForest': 5,
+    'KNN': 6,
+    'LOF': 7,
+    'MCD': 8,
+    'OCSVM': 9,
+    'PCA': 10,
+    'UNK': 11
+}

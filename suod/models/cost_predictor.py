@@ -1,9 +1,11 @@
+# Author: Yue Zhao <zhaoy@cmu.edu>
+# License: BSD 2 clause
 import sys
 import os
 
 import numpy as np
 import pandas as pd
-from joblib import dump, load
+from joblib import dump
 
 from scipy.stats import pearsonr
 from scipy.stats import spearmanr
@@ -22,35 +24,6 @@ def indices_to_one_hot(data, nb_classes):
     """Convert an iterable of indices to one-hot encoded labels."""
     targets = np.array(data).reshape(-1)
     return np.eye(nb_classes)[targets]
-
-
-idx_clf_mapping = {
-    1: 'ABOD',
-    2: 'CBLOF',
-    3: 'FeatureBagging',
-    4: 'HBOS',
-    5: 'IForest',
-    6: 'KNN',
-    7: 'LOF',
-    8: 'MCD',
-    9: 'OCSVM',
-    10: 'PCA',
-    11: 'UNK'
-}
-
-clf_idx_mapping = {
-    'ABOD': 1,
-    'CBLOF': 2,
-    'FeatureBagging': 3,
-    'HBOS': 4,
-    'IForest': 5,
-    'KNN': 6,
-    'LOF': 7,
-    'MCD': 8,
-    'OCSVM': 9,
-    'PCA': 10,
-    'UNK': 11
-}
 
 
 def build_cost_predictor(file_name, output_file):
@@ -104,20 +77,6 @@ def build_cost_predictor(file_name, output_file):
     X = np.concatenate((X[:, [0, 1, 2]], w), axis=1)
     indices = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     X = X[:, indices]
-
-    clf_mapping = {
-        1: 'ABOD',
-        2: 'CBLOF',
-        3: 'FeatureBagging',
-        4: 'HBOS',
-        5: 'IForest',
-        6: 'KNN',
-        7: 'LOF',
-        8: 'MCD',
-        9: 'OCSVM',
-        10: 'PCA',
-        11: 'UKN'
-    }
 
     r2 = []
     mse = []

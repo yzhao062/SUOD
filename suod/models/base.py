@@ -1,32 +1,21 @@
 # Author: Yue Zhao <zhaoy@cmu.edu>
 # License: BSD 2 clause
 import os
-import sys
 import time
 
-import warnings
-from collections import defaultdict
 import numbers
 
 import numpy as np
-from numpy import percentile
-from scipy.special import erf
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.utils import column_or_1d
-from sklearn.utils.validation import check_is_fitted
-from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils import check_array
 
 import joblib
 from joblib import Parallel, delayed
 
-from .cost_predictor import clf_idx_mapping
-
 from pyod.models.sklearn_base import _pprint
 from pyod.utils.utility import _get_sklearn_version
 
-from suod.models.parallel_processes import cost_forecast_meta
+from suod.models.parallel_processes import cost_forecast_meta, clf_idx_mapping
 from suod.models.parallel_processes import balanced_scheduling
 from suod.models.parallel_processes import _parallel_fit
 from suod.models.parallel_processes import _parallel_predict

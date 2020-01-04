@@ -22,6 +22,11 @@ from pyod.utils.data import evaluate_print
 
 from combo.models.score_comb import majority_vote, maximization, average
 
+# suppress warnings
+import warnings
+
+warnings.filterwarnings("ignore")
+
 # temporary solution for relative imports in case combo is not installed
 # if combo is installed, no need to use the following line
 sys.path.append(
@@ -106,9 +111,9 @@ if __name__ == "__main__":
     model = SUOD(base_estimators=base_estimators, n_jobs=6, bps_flag=True, 
                  contamination=contamination, approx_flag_global=False)
 
-    model.fit(X)
-    model.approximate(X)
-    predicted_labels = model.predict(X)
+    model.fit(X)  # fit all models with X
+    model.approximate(X)  # conduct model approximation if it is enabled
+    predicted_labels = model.predict(X)  # predict 
     predicted_scores = model.decision_function(X)
 
     # %%

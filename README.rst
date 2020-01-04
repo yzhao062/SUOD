@@ -43,8 +43,8 @@ SUOD: An Acceleration System for Large Scale Unsupervised Anomaly Detection
    :alt: Circle CI
 
 
-.. image:: https://coveralls.io/repos/github/yzhao062/suod/badge.svg
-   :target: https://coveralls.io/github/yzhao062/suod
+.. image:: https://coveralls.io/repos/github/yzhao062/SUOD/badge.svg
+   :target: https://coveralls.io/github/yzhao062/SUOD
    :alt: Coverage Status
 
 
@@ -52,12 +52,47 @@ SUOD: An Acceleration System for Large Scale Unsupervised Anomaly Detection
 
 
 **SUOD** (Toward **S**\calable **U**\nsupervised **O**\utlier **D**\etection) is an **acceleration framework for large scale unsupervised outlier detector training and prediction**.
-Notably, anomaly detection is often formulated as an unsupervised problem since the ground truth is expensive to acquire in practice.
+Notably, anomaly detection is often formulated as an unsupervised problem since the ground truth is expensive to acquire.
 As a result, analysts often build many diversified models and further combine them (sometimes with rule-based models)---this has become a standard process in many industries to 
 offset the challenges of the data imbalance and unsupervised nature. However, **building a large number of unsupervised models are very costly or even infeasible on high-dimensional, large datasets**.
 
 SUOD is therefore proposed to alleviate, if not fully fix, this problem.
 The focus of SUOD is **to accelerate the training and prediction when a large number of anomaly detectors are presented**.
+
+
+**API Demo**\ :
+
+
+   .. code-block:: python
+
+
+       from suod.models.base import SUOD
+
+       # initialize a set of base outlier detectors to train and predict on
+       base_estimators = [
+           LOF(n_neighbors=5, contamination=contamination),
+           LOF(n_neighbors=15, contamination=contamination),
+           LOF(n_neighbors=25, contamination=contamination),
+           LOF(n_neighbors=35, contamination=contamination),
+           LOF(n_neighbors=45, contamination=contamination),
+           HBOS(contamination=contamination),
+           PCA(contamination=contamination),
+           OCSVM(contamination=contamination),
+           KNN(n_neighbors=5, contamination=contamination),
+           KNN(n_neighbors=15, contamination=contamination),
+           KNN(n_neighbors=25, contamination=contamination),
+           KNN(n_neighbors=35, contamination=contamination)
+       ]
+
+       # initialize a SUOD model with all features turned on
+       model = SUOD(base_estimators=base_estimators,
+                    n_jobs=6, bps_flag=True,
+                    contamination=contamination, approx_flag_global=False)
+
+       model.fit(X)  # fit all models with X
+       model.approximate(X)  # conduct model approximation if it is enabled
+       predicted_labels = model.predict(X)  # predict labels on X; for demo purpose only
+       predicted_scores = model.decision_function(X)  # predict scores on X; for demo purpose only
 
 
 ----
@@ -80,6 +115,13 @@ If you use SUOD in a scientific publication, we would appreciate citations to th
 A preliminary version of paper can be accessed `here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
 The revised and extended version will be submitted to `KDD 2020 (ADS track) <https://www.kdd.org/kdd2020/>`_.
 [`Preprint <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_], [`slides <https://www.andrew.cmu.edu/user/yuezhao2/misc/10715-SUOD-Toward-Scalable-Unsupervised-Outlier-Detection.pdf>`_], [`AICS <http://aics.site/AICS2020/>`_]
+
+
+**Table of Contents**\ :
+
+
+* `Reproduction Instructions <#reproduction-instructions>`_
+* `Installation <#installation>`_
 
 ------------
 
@@ -125,6 +167,7 @@ Alternatively, you could clone and run setup.py file:
 * matplotlib (**optional for running examples**)
 * numpy>=1.13
 * numba>=0.35
+* pandas (**optional for building the cost forecast model**)
 * pyod
 * scipy>=0.19.1
 * scikit_learn>=0.19.1
@@ -133,7 +176,7 @@ Alternatively, you could clone and run setup.py file:
 **Note on Python 2**\ :
 The maintenance of Python 2.7 will be stopped by January 1, 2020 (see `official announcement <https://github.com/python/devguide/pull/344>`_).
 To be consistent with the Python change and suod's dependent libraries, e.g., scikit-learn,
-**suod only supports Python 3.5+** and we encourage you to use
+**SUOD only supports Python 3.5+** and we encourage you to use
 Python 3.5 or newer for the latest functions and bug fixes. More information can
 be found at `Moving to require Python 3 <https://python3statement.org/>`_.
 
@@ -142,7 +185,7 @@ be found at `Moving to require Python 3 <https://python3statement.org/>`_.
 
 
 **More to come...**
-Last updated on Dec 28th, 2019.
+Last updated on Jan 4th, 2019.
 
 Feel free to star for the future update :)
 

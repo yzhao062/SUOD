@@ -20,7 +20,8 @@ def indices_to_one_hot(data, nb_classes):
 
 def balanced_scheduling(time_cost_pred, n_estimators, n_jobs):
     """Conduct balanced scheduling based on the sum of rank, for both train
-    and prediction.
+    and prediction. The algorithm will enforce the equal sum of ranks among 
+    workers.
 
     Parameters
     ----------

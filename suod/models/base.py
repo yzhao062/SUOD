@@ -45,7 +45,7 @@ else:
 
 
 class SUOD(object):
-    """Abstract class for all combination classes.
+    """Towards (Scalable Unsupervised Outlier Detection).
 
     Parameters
     ----------
@@ -62,7 +62,28 @@ class SUOD(object):
                  rp_clf_list=None, rp_ng_clf_list=None, rp_flag_global=True,
                  max_features=0.5, rp_method='basic', bps_flag=False,
                  approx_clf_list=None, approx_ng_clf_list=None,
-                 approx_flag_global=True, approx_clf=None, verbose=False):
+                 approx_flag_global=True, approx_clf=None,
+                 cost_forecast_loc_fit=None, cost_forecast_loc_pred=None,
+                 verbose=False):
+        """
+
+        Parameters
+        ----------
+        base_estimators
+        contamination
+        n_jobs
+        rp_clf_list
+        rp_ng_clf_list
+        rp_flag_global
+        max_features
+        rp_method
+        bps_flag
+        approx_clf_list
+        approx_ng_clf_list
+        approx_flag_global
+        approx_clf
+        verbose
+        """
 
         assert (isinstance(base_estimators, (list)))
         if len(base_estimators) < 2:
@@ -115,7 +136,19 @@ class SUOD(object):
         else:
             self.approx_ng_clf_list = approx_ng_clf_list
 
-        # build flags for random projection
+        if cost_forecast_loc_fit is None:
+            self.cost_forecast_loc_fit_ = os.path.join(
+                '../suod', 'models', 'saved_models', 'bps_train.joblib')
+        else:
+            self.cost_forecast_loc_fit_ = cost_forecast_loc_fit
+
+        if cost_forecast_loc_pred is None:
+            self.cost_forecast_loc_pred_ = os.path.join(
+                '../suod', 'models', 'saved_models', 'bps_prediction.joblib')
+        else:
+            self.cost_forecast_loc_pred_ = cost_forecast_loc_pred
+
+            # build flags for random projection
         self.rp_flags, self.base_estimator_names = build_codes(
             self.n_estimators,
             self.base_estimators,
@@ -156,9 +189,7 @@ class SUOD(object):
         # it is turned off
         if self.bps_flag:
             # load the pre-trained cost predictor to forecast the train cost
-            cost_predictor = joblib.load(
-                os.path.join('../suod', 'models', 'saved_models',
-                             'bps_train.joblib'))
+            cost_predictor = joblib.load(self.cost_forecast_loc_fit_)
 
             time_cost_pred = cost_forecast_meta(cost_predictor, X,
                                                 self.base_estimator_names)
@@ -255,9 +286,7 @@ class SUOD(object):
         # it is turned off
         if self.bps_flag:
             # load the pre-trained cost predictor to forecast the train cost
-            cost_predictor = joblib.load(
-                os.path.join('../suod', 'models', 'saved_models',
-                             'bps_train.joblib'))
+            cost_predictor = joblib.load(self.cost_forecast_loc_pred_)
 
             time_cost_pred = cost_forecast_meta(cost_predictor, X,
                                                 self.base_estimator_names)
@@ -327,9 +356,7 @@ class SUOD(object):
         # it is turned off
         if self.bps_flag:
             # load the pre-trained cost predictor to forecast the train cost
-            cost_predictor = joblib.load(
-                os.path.join('../suod', 'models', 'saved_models',
-                             'bps_train.joblib'))
+            cost_predictor = joblib.load(self.cost_forecast_loc_pred_)
 
             time_cost_pred = cost_forecast_meta(cost_predictor, X,
                                                 self.base_estimator_names)

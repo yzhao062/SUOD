@@ -21,7 +21,7 @@ install:
 
 # command to run tests
 script:
-   pytest --cov=combo/
+   pytest --cov=suod/
 
 after_success:
   - coveralls

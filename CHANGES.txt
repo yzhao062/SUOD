@@ -1,1 +1,2 @@
 v<0.0.0>, <12/13/2019> -- Initial release for PyPI.
+v<0.0.1>, <01/04/2020> -- Turn on autotest and coverage.

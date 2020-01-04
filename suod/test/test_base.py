@@ -46,11 +46,9 @@ class TestBASE(unittest.TestCase):
                 random_state=self.random_state)
         ]
 
-        self.cost_forecast_loc_fit_ = os.path.join(
-            '../models', 'saved_models', 'bps_train.joblib')
+        self.cost_forecast_loc_fit_ = os.path.join('bps_train.joblib')
 
-        self.cost_forecast_loc_pred_ = os.path.join(
-            '../models', 'saved_models', 'bps_prediction.joblib')
+        self.cost_forecast_loc_pred_ = os.path.join('bps_prediction.joblib')
 
         self.model = SUOD(base_estimators=self.base_estimators, n_jobs=2,
                           rp_flag_global=True, bps_flag=True,

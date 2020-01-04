@@ -38,8 +38,8 @@ SUOD: An Acceleration System for Large Scale Unsupervised Anomaly Detection
    :alt: Build Status
 
 
-.. image:: https://circleci.com/gh/yzhao062/suod.svg?style=svg
-   :target: https://circleci.com/gh/yzhao062/suod
+.. image:: https://circleci.com/gh/yzhao062/SUOD.svg?style=svg
+   :target: https://circleci.com/gh/yzhao062/SUOD
    :alt: Circle CI
 
 

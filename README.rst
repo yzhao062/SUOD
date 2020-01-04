@@ -7,6 +7,47 @@ SUOD: An Acceleration System for Large Scale Unsupervised Anomaly Detection
    :target: https://pypi.org/project/suod/
    :alt: PyPI version
 
+.. image:: https://img.shields.io/github/stars/yzhao062/suod.svg
+   :target: https://github.com/yzhao062/suod/stargazers
+   :alt: GitHub stars
+
+
+.. image:: https://img.shields.io/github/forks/yzhao062/suod.svg?color=blue
+   :target: https://github.com/yzhao062/suod/network
+   :alt: GitHub forks
+
+
+.. image:: https://pepy.tech/badge/suod
+   :target: https://pepy.tech/project/suod
+   :alt: Downloads
+
+
+.. image:: https://pepy.tech/badge/suod/month
+   :target: https://pepy.tech/project/suod
+   :alt: Downloads
+
+
+----
+
+
+**Build Status & Coverage & Maintainability & License**
+
+
+.. image:: https://travis-ci.org/yzhao062/suod.svg?branch=master
+   :target: https://travis-ci.org/yzhao062/suod
+   :alt: Build Status
+
+
+.. image:: https://circleci.com/gh/yzhao062/suod.svg?style=svg
+   :target: https://circleci.com/gh/yzhao062/suod
+   :alt: Circle CI
+
+
+.. image:: https://coveralls.io/repos/github/yzhao062/suod/badge.svg
+   :target: https://coveralls.io/github/yzhao062/suod
+   :alt: Coverage Status
+
+
 ----
 
 

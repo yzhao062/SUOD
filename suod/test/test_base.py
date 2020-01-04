@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
-from __future__ import print_function
-
 import os
 import sys
 
@@ -19,11 +16,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from suod.models.base import SUOD
 from pyod.utils.data import generate_data
 from pyod.models.lof import LOF
-from pyod.models.iforest import IForest
-from pyod.models.lof import LOF
-from pyod.models.ocsvm import OCSVM
 from pyod.models.pca import PCA
-from pyod.models.knn import KNN
 from pyod.models.hbos import HBOS
 from pyod.models.lscp import LSCP
 
@@ -49,7 +42,8 @@ class TestBASE(unittest.TestCase):
             PCA(contamination=self.contamination),
             LSCP(detector_list=[
                 LOF(n_neighbors=5, contamination=self.contamination),
-                LOF(n_neighbors=15, contamination=self.contamination)])
+                LOF(n_neighbors=15, contamination=self.contamination)],
+                random_state=self.random_state)
         ]
 
         self.cost_forecast_loc_fit_ = os.path.join(

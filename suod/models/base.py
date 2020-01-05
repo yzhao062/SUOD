@@ -1,5 +1,10 @@
+# -*- coding: utf-8 -*-
+"""Base class for SUOD
+"""
 # Author: Yue Zhao <zhaoy@cmu.edu>
 # License: BSD 2 clause
+
+
 import os
 import sys
 import time
@@ -15,6 +20,7 @@ from joblib import Parallel, delayed
 
 from pyod.models.sklearn_base import _pprint
 from pyod.utils.utility import _get_sklearn_version
+from pyod.utils.utility import check_parameter
 
 from suod.models.parallel_processes import cost_forecast_meta, clf_idx_mapping
 from suod.models.parallel_processes import balanced_scheduling
@@ -28,8 +34,7 @@ from suod.models.utils.utility import _unfold_parallel
 import warnings
 from collections import defaultdict
 
-# temporary solution for relative imports in case combo is not installed
-# if combo is installed, no need to use the following line
+# temporary solution for relative imports
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
 
@@ -90,9 +95,33 @@ class SUOD(object):
         self.rp_method = rp_method
         self.bps_flag = bps_flag
         self.verbose = verbose
-        self.approx_clf_list = approx_clf_list
-        self.approx_ng_clf_list = approx_ng_clf_list
         self.approx_flag_global = approx_flag_global
+        self.contamination = contamination
+
+        self._parameter_validation(contamination, n_jobs, rp_clf_list,
+                                   rp_ng_clf_list, approx_clf_list,
+                                   approx_ng_clf_list, approx_clf,
+                                   cost_forecast_loc_fit,
+                                   cost_forecast_loc_pred)
+
+        # build flags for random projection
+        self.rp_flags, self.base_estimator_names = build_codes(
+            self.n_estimators,
+            self.base_estimators,
+            self.rp_clf_list,
+            self.rp_ng_clf_list,
+            self.rp_flag_global)
+
+    def _parameter_validation(self, contamination, n_jobs, rp_clf_list,
+                              rp_ng_clf_list, approx_clf_list,
+                              approx_ng_clf_list, approx_clf,
+                              cost_forecast_loc_fit,
+                              cost_forecast_loc_pred):
+
+        if not (0. < contamination <= 0.5):
+            raise ValueError("contamination must be in (0, 0.5], "
+                             "got: %f" % contamination)
+
         self.contamination = contamination
 
         if approx_clf is not None:
@@ -117,6 +146,10 @@ class SUOD(object):
             self.rp_ng_clf_list = ['IForest', 'PCA', 'HBOS']
         else:
             self.rp_ng_clf_list = rp_ng_clf_list
+
+        # Validate max_features
+        check_parameter(self.max_features, low=0, high=1, include_left=False,
+                        include_right=True, param_name='max_features')
 
         # validate model approximation list
         if approx_clf_list is None:
@@ -145,13 +178,7 @@ class SUOD(object):
         else:
             self.cost_forecast_loc_pred_ = cost_forecast_loc_pred
 
-            # build flags for random projection
-        self.rp_flags, self.base_estimator_names = build_codes(
-            self.n_estimators,
-            self.base_estimators,
-            self.rp_clf_list,
-            self.rp_ng_clf_list,
-            self.rp_flag_global)
+        return self
 
     def fit(self, X, y=None):
         """Fit estimator. y is optional for unsupervised methods.

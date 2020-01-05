@@ -1,4 +1,4 @@
-from copy import deepcopy
+from sklearn.base import clone
 
 import numpy as np
 from scipy.stats import rankdata
@@ -99,7 +99,7 @@ def _parallel_fit(n_estimators, clfs, X, total_n_estimators,
     estimators = []
     rp_transformers = []
     for i in range(n_estimators):
-        estimator = deepcopy(clfs[i])
+        estimator = clone(clfs[i])
         if verbose > 1:
             print("Building estimator %d of %d for this parallel run "
                   "(total %d)..." % (i + 1, n_estimators, total_n_estimators))
@@ -236,7 +236,7 @@ def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
             pseudo_scores = estimator.decision_scores_
             # pseudo_scores = estimator.decision_function(X)
             # use the same type of approximator for all models
-            base_approximater = deepcopy(approximator)
+            base_approximater = clone(approximator)
             base_approximater.fit(X, pseudo_scores)
 
             approximators.append(base_approximater)

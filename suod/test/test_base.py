@@ -61,6 +61,10 @@ class TestBASE(unittest.TestCase):
                           cost_forecast_loc_fit=self.cost_forecast_loc_fit_,
                           cost_forecast_loc_pred=self.cost_forecast_loc_pred_)
 
+    def test_initialization(self):
+        self.model.get_params()
+        self.model.set_params(**{'n_jobs': 4})
+
     def test_fit(self):
         """
         Test base class initialization

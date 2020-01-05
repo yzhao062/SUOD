@@ -1,6 +1,7 @@
 # Author: Yue Zhao <zhaoy@cmu.edu>
 # License: BSD 2 clause
 import os
+import sys
 import time
 
 import numbers
@@ -26,6 +27,11 @@ from suod.models.utils.utility import _unfold_parallel
 
 import warnings
 from collections import defaultdict
+
+# temporary solution for relative imports in case combo is not installed
+# if combo is installed, no need to use the following line
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
 
 if _get_sklearn_version() > 20:
     from inspect import signature
@@ -125,15 +131,17 @@ class SUOD(object):
         else:
             self.approx_ng_clf_list = approx_ng_clf_list
 
+        this_directory = os.path.abspath(os.path.dirname(__file__))
+
         if cost_forecast_loc_fit is None:
             self.cost_forecast_loc_fit_ = os.path.join(
-                '../suod', 'models', 'saved_models', 'bps_train.joblib')
+                this_directory, 'saved_models', 'bps_train.joblib')
         else:
             self.cost_forecast_loc_fit_ = cost_forecast_loc_fit
 
         if cost_forecast_loc_pred is None:
             self.cost_forecast_loc_pred_ = os.path.join(
-                '../suod', 'models', 'saved_models', 'bps_prediction.joblib')
+                this_directory, 'saved_models', 'bps_prediction.joblib')
         else:
             self.cost_forecast_loc_pred_ = cost_forecast_loc_pred
 

@@ -81,8 +81,7 @@ The focus of SUOD is **to accelerate the training and prediction when a large nu
            KNN(n_neighbors=5, contamination=contamination),
            KNN(n_neighbors=15, contamination=contamination),
            KNN(n_neighbors=25, contamination=contamination),
-           KNN(n_neighbors=35, contamination=contamination)
-       ]
+           KNN(n_neighbors=35, contamination=contamination)]
 
        # initialize a SUOD model with all features turned on
        model = SUOD(base_estimators=base_estimators,

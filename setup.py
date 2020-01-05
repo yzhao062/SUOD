@@ -32,7 +32,7 @@ setup(
     author='Yue Zhao',
     author_email='zhaoy@cmu.edu',
     url='https://github.com/yzhao062/suod',
-    download_url='https://github.com/yzhao062/combo/archive/master.zip',
+    download_url='https://github.com/yzhao062/suod/archive/master.zip',
     keywords=['ensemble learning', 'anomaly detection', 'outlier ensembles',
               'data mining', 'machine learning', 'python'],
     packages=find_packages(exclude=['test']),

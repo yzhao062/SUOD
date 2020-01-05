@@ -113,8 +113,8 @@ if __name__ == "__main__":
 
     model.fit(X)  # fit all models with X
     model.approximate(X)  # conduct model approximation if it is enabled
-    predicted_labels = model.predict(X)  # predict 
-    predicted_scores = model.decision_function(X)
+    predicted_labels = model.predict(X)  # predict labels on X; for demo purpose only
+    predicted_scores = model.decision_function(X)  # predict scores on X; for demo purpose only
 
     # %%
     evaluate_print('majority vote', y, majority_vote(predicted_labels))

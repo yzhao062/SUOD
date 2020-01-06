@@ -88,10 +88,10 @@ The focus of SUOD is **to accelerate the training and prediction when a large nu
                     n_jobs=6, bps_flag=True,
                     contamination=contamination, approx_flag_global=False)
 
-       model.fit(X)  # fit all models with X
-       model.approximate(X)  # conduct model approximation if it is enabled
-       predicted_labels = model.predict(X)  # predict labels on X; for demo purpose only
-       predicted_scores = model.decision_function(X)  # predict scores on X; for demo purpose only
+       model.fit(X_train)  # fit all models with X
+       model.approximate(X_train)  # conduct model approximation if it is enabled
+       predicted_labels = model.predict(X_test)  # predict labels
+       predicted_scores = model.decision_function(X_test)  # predict scores
 
 
 ----
@@ -132,7 +132,8 @@ For instance, you could navigate to /M1_RP/demo_random_projection.py. Demo codes
 
 **A full example may be found in demo_full.py under the root directory.**
 
-**Production level code will be released soon---it will support PyPI installation with full documentation and example!**
+**Examples** can be found under /examples folder; run "demo_base.py" for
+a full example.
 
 ------------
 

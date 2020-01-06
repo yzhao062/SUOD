@@ -1,15 +1,10 @@
-# %%
 import os
 import sys
-import time
-import numpy as np
+
 import scipy as sp
 
-import joblib
-from joblib import Parallel, delayed
-
 from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestRegressor
+from sklearn.model_selection import train_test_split
 
 from pyod.models.iforest import IForest
 from pyod.models.lof import LOF
@@ -35,8 +30,7 @@ sys.path.append(
 from suod.models.base import SUOD
 
 if __name__ == "__main__":
-    
-# load files
+    # load files
     mat_file_list = [
         'cardio.mat',
         # 'satellite.mat',
@@ -54,8 +48,11 @@ if __name__ == "__main__":
 
     # standardize data to be digestible for most algorithms
     X = StandardScaler().fit_transform(X)
-    
-    contamination = y.sum()/len(y)
+
+    X_train, X_test, y_train, y_test = \
+        train_test_split(X, y, test_size=0.4, random_state=42)
+
+    contamination = y.sum() / len(y)
 
     base_estimators = [
         LOF(n_neighbors=5, contamination=contamination),
@@ -106,25 +103,25 @@ if __name__ == "__main__":
         LSCP(detector_list=[LOF(contamination=contamination),
                             LOF(contamination=contamination)])
     ]
-    
-    
-    model = SUOD(base_estimators=base_estimators, n_jobs=6, bps_flag=True, 
-                 contamination=contamination, approx_flag_global=False)
 
-    model.fit(X)  # fit all models with X
-    model.approximate(X)  # conduct model approximation if it is enabled
-    predicted_labels = model.predict(X)  # predict labels on X; for demo purpose only
-    predicted_scores = model.decision_function(X)  # predict scores on X; for demo purpose only
+    model = SUOD(base_estimators=base_estimators, n_jobs=6, bps_flag=True,
+                 contamination=contamination, approx_flag_global=True)
 
-    # %%
-    evaluate_print('majority vote', y, majority_vote(predicted_labels))
-    evaluate_print('average', y, average(predicted_scores))
-    evaluate_print('maximization', y, maximization(predicted_scores))
+    model.fit(X_train)  # fit all models with X
+    model.approximate(X_train)  # conduct model approximation if it is enabled
+    predicted_labels = model.predict(X_test)  # predict labels
+    predicted_scores = model.decision_function(X_test)  # predict scores
+
+    ###########################################################################
+    # compared with other approaches
+    evaluate_print('majority vote', y_test, majority_vote(predicted_labels))
+    evaluate_print('average', y_test, average(predicted_scores))
+    evaluate_print('maximization', y_test, maximization(predicted_scores))
 
     clf = LOF()
-    clf.fit(X)
-    evaluate_print('LOF', y, clf.decision_scores_)
+    clf.fit(X_train)
+    evaluate_print('LOF', y_test, clf.decision_function(X_test))
 
     clf = IForest()
-    clf.fit(X)
-    evaluate_print('IForest', y, clf.decision_scores_)
+    clf.fit(X_train)
+    evaluate_print('IForest', y_test, clf.decision_function(X_test))

@@ -45,7 +45,10 @@ else:
 
 
 class SUOD(object):
-    """Towards (Scalable Unsupervised Outlier Detection).
+    """Towards (Scalable Unsupervised Outlier Detection). SUOD
+    (Toward Scalable Unsupervised Outlier Detection) is an acceleration
+    framework for large scale unsupervised outlier detector training and
+    prediction.
 
     Parameters
     ----------
@@ -53,37 +56,47 @@ class SUOD(object):
         A list of base estimators. Certain methods must be present, e.g.,
         `fit` and `predict`.
 
-    pre_fitted: bool, optional (default=False)
-        Whether the base estimators are trained. If True, `fit`
-        process may be skipped.
+    contamination : float in (0., 0.5), optional (default=0.1)
+        The amount of contamination of the data set,
+        i.e. the proportion of outliers in the data set. Used when fitting to
+        define the threshold on the decision function.
+
+    n_jobs : optional (default=1)
+        The number of jobs to run in parallel for both `fit` and
+        `predict`. If -1, then the number of jobs is set to the
+        number of cores.
+
+    rp_clf_list
+    rp_ng_clf_list
+    rp_flag_global
+    max_features
+    rp_method
+    bps_flag
+    approx_clf_list
+    approx_ng_clf_list
+
+    approx_flag_global : bool
+
+    approx_clf : object, optional (default: sklearn RandomForestRegressor)
+
+    cost_forecast_loc_fit : str, optional
+        The location of the pretrained cost prediction forecast for training.
+
+    cost_forecast_loc_pred : str, optional
+        The location of the pretrained cost prediction forecast for prediction.
+
+    verbose : int, optional (default=0)
+        Controls the verbosity of the building process.
+
     """
 
-    def __init__(self, base_estimators, contamination=0.05, n_jobs=None,
+    def __init__(self, base_estimators, contamination=0.1, n_jobs=None,
                  rp_clf_list=None, rp_ng_clf_list=None, rp_flag_global=True,
                  max_features=0.5, rp_method='basic', bps_flag=False,
                  approx_clf_list=None, approx_ng_clf_list=None,
                  approx_flag_global=True, approx_clf=None,
                  cost_forecast_loc_fit=None, cost_forecast_loc_pred=None,
                  verbose=False):
-        """
-
-        Parameters
-        ----------
-        base_estimators
-        contamination
-        n_jobs
-        rp_clf_list
-        rp_ng_clf_list
-        rp_flag_global
-        max_features
-        rp_method
-        bps_flag
-        approx_clf_list
-        approx_ng_clf_list
-        approx_flag_global
-        approx_clf
-        verbose
-        """
 
         assert (isinstance(base_estimators, (list)))
         if len(base_estimators) < 2:

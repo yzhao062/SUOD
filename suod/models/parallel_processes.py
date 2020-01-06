@@ -184,22 +184,6 @@ def _parallel_decision_function(n_estimators, clfs, approximators, X,
     return pred
 
 
-def _partition_estimators(n_estimators, n_jobs):
-    """Private function used to partition estimators between jobs in
-    scikit-learn."""
-
-    # Compute the number of jobs
-    n_jobs = min(effective_n_jobs(n_jobs), n_estimators)
-
-    # Partition estimators between jobs
-    n_estimators_per_job = np.full(n_jobs, n_estimators // n_jobs,
-                                   dtype=np.int)
-    n_estimators_per_job[:n_estimators % n_jobs] += 1
-    starts = np.cumsum(n_estimators_per_job)
-
-    return n_estimators_per_job.tolist(), [0] + starts.tolist(), n_jobs
-
-
 def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
                                 approx_flags, approximator, verbose):
     """

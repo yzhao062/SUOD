@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+from copy import deepcopy
 
 import numpy as np
 import scipy as sp
@@ -10,22 +11,10 @@ from sklearn.model_selection import train_test_split
 
 from joblib import Parallel, delayed
 
-from pyod.models.iforest import IForest
-from pyod.models.lof import LOF
-from pyod.models.ocsvm import OCSVM
-from pyod.models.pca import PCA
-from pyod.models.knn import KNN
-from pyod.models.hbos import HBOS
-from pyod.models.lscp import LSCP
 from pyod.utils.utility import standardizer
 from pyod.utils.data import evaluate_print
 
 from combo.models.score_comb import majority_vote, maximization, average
-
-# suppress warnings
-import warnings
-
-warnings.filterwarnings("ignore")
 
 # temporary solution for relative imports in case combo is not installed
 # if combo is installed, no need to use the following line
@@ -42,8 +31,16 @@ from suod.models.parallel_processes import _partition_estimators
 from suod.models.parallel_processes import _parallel_approx_estimators
 from suod.models.parallel_processes import balanced_scheduling
 from suod.models.utils.utility import _unfold_parallel
+from suod.models.utils.utility import get_estimators
+
+# suppress warnings
+import warnings
+
+warnings.filterwarnings("ignore")
 
 if __name__ == "__main__":
+
+    n_jobs = 6
     # load files
     mat_file_list = [
         # 'cardio.mat',
@@ -63,130 +60,34 @@ if __name__ == "__main__":
     # standardize data to be digestible for most algorithms
     X = StandardScaler().fit_transform(X)
 
-    X_train, X_test, y_train, y_test = \
+    X, X, y_train, y_test = \
         train_test_split(X, y, test_size=0.4, random_state=42)
 
     contamination = y.sum() / len(y)
 
-    base_estimators = [
-        LOF(n_neighbors=5, contamination=contamination),
-        LOF(n_neighbors=15, contamination=contamination),
-        LOF(n_neighbors=25, contamination=contamination),
-        LOF(n_neighbors=35, contamination=contamination),
-        LOF(n_neighbors=45, contamination=contamination),
-        HBOS(contamination=contamination),
-        PCA(contamination=contamination),
-        OCSVM(contamination=contamination),
-        KNN(n_neighbors=5, contamination=contamination),
-        KNN(n_neighbors=15, contamination=contamination),
-        KNN(n_neighbors=25, contamination=contamination),
-        KNN(n_neighbors=35, contamination=contamination),
-        KNN(n_neighbors=45, contamination=contamination),
-        IForest(n_estimators=50, contamination=contamination),
-        IForest(n_estimators=100, contamination=contamination),
-        LOF(n_neighbors=5, contamination=contamination),
-        LOF(n_neighbors=15, contamination=contamination),
-        LOF(n_neighbors=25, contamination=contamination),
-        LOF(n_neighbors=35, contamination=contamination),
-        LOF(n_neighbors=45, contamination=contamination),
-        HBOS(contamination=contamination),
-        PCA(contamination=contamination),
-        OCSVM(contamination=contamination),
-        KNN(n_neighbors=5, contamination=contamination),
-        KNN(n_neighbors=15, contamination=contamination),
-        KNN(n_neighbors=25, contamination=contamination),
-        KNN(n_neighbors=35, contamination=contamination),
-        KNN(n_neighbors=45, contamination=contamination),
-        IForest(n_estimators=50, contamination=contamination),
-        IForest(n_estimators=100, contamination=contamination),
-        LOF(n_neighbors=5, contamination=contamination),
-        LOF(n_neighbors=15, contamination=contamination),
-        LOF(n_neighbors=25, contamination=contamination),
-        LOF(n_neighbors=35, contamination=contamination),
-        LOF(n_neighbors=45, contamination=contamination),
-        HBOS(contamination=contamination),
-        PCA(contamination=contamination),
-        OCSVM(contamination=contamination),
-        KNN(n_neighbors=5, contamination=contamination),
-        KNN(n_neighbors=15, contamination=contamination),
-        KNN(n_neighbors=25, contamination=contamination),
-        KNN(n_neighbors=35, contamination=contamination),
-        KNN(n_neighbors=45, contamination=contamination),
-        IForest(n_estimators=50, contamination=contamination),
-        IForest(n_estimators=100, contamination=contamination),
-        LSCP(detector_list=[LOF(contamination=contamination),
-                            LOF(contamination=contamination)]),
-
-        LOF(n_neighbors=5, contamination=contamination),
-        LOF(n_neighbors=15, contamination=contamination),
-        LOF(n_neighbors=25, contamination=contamination),
-        LOF(n_neighbors=35, contamination=contamination),
-        LOF(n_neighbors=45, contamination=contamination),
-        HBOS(contamination=contamination),
-        PCA(contamination=contamination),
-        OCSVM(contamination=contamination),
-        KNN(n_neighbors=5, contamination=contamination),
-        KNN(n_neighbors=15, contamination=contamination),
-        KNN(n_neighbors=25, contamination=contamination),
-        KNN(n_neighbors=35, contamination=contamination),
-        KNN(n_neighbors=45, contamination=contamination),
-        IForest(n_estimators=50, contamination=contamination),
-        IForest(n_estimators=100, contamination=contamination),
-        LOF(n_neighbors=5, contamination=contamination),
-        LOF(n_neighbors=15, contamination=contamination),
-        LOF(n_neighbors=25, contamination=contamination),
-        LOF(n_neighbors=35, contamination=contamination),
-        LOF(n_neighbors=45, contamination=contamination),
-        HBOS(contamination=contamination),
-        PCA(contamination=contamination),
-        OCSVM(contamination=contamination),
-        KNN(n_neighbors=5, contamination=contamination),
-        KNN(n_neighbors=15, contamination=contamination),
-        KNN(n_neighbors=25, contamination=contamination),
-        KNN(n_neighbors=35, contamination=contamination),
-        KNN(n_neighbors=45, contamination=contamination),
-        IForest(n_estimators=50, contamination=contamination),
-        IForest(n_estimators=100, contamination=contamination),
-        LOF(n_neighbors=5, contamination=contamination),
-        LOF(n_neighbors=15, contamination=contamination),
-        LOF(n_neighbors=25, contamination=contamination),
-        LOF(n_neighbors=35, contamination=contamination),
-        LOF(n_neighbors=45, contamination=contamination),
-        HBOS(contamination=contamination),
-        PCA(contamination=contamination),
-        OCSVM(contamination=contamination),
-        KNN(n_neighbors=5, contamination=contamination),
-        KNN(n_neighbors=15, contamination=contamination),
-        KNN(n_neighbors=25, contamination=contamination),
-        KNN(n_neighbors=35, contamination=contamination),
-        KNN(n_neighbors=45, contamination=contamination),
-        IForest(n_estimators=50, contamination=contamination),
-        IForest(n_estimators=100, contamination=contamination),
-        LSCP(detector_list=[LOF(contamination=contamination),
-                            LOF(contamination=contamination)])
-    ]
+    base_estimators = deepcopy(get_estimators(contamination=contamination))
 
     model = SUOD(base_estimators=base_estimators, rp_flag_global=True,
-                 n_jobs=6, bps_flag=True, contamination=contamination,
+                 n_jobs=n_jobs, bps_flag=True, contamination=contamination,
                  approx_flag_global=True)
 
     start = time.time()
-    model.fit(X_train)  # fit all models with X
+    model.fit(X)  # fit all models with X
     print('Fit time:', time.time() - start)
     print()
 
     start = time.time()
-    model.approximate(X_train)  # conduct model approximation if it is enabled
+    model.approximate(X)  # conduct model approximation if it is enabled
     print('Approximation time:', time.time() - start)
     print()
 
     start = time.time()
-    predicted_labels = model.predict(X_test)  # predict labels
+    predicted_labels = model.predict(X)  # predict labels
     print('Predict time:', time.time() - start)
     print()
 
     start = time.time()
-    predicted_scores = model.decision_function(X_test)  # predict scores
+    predicted_scores = model.decision_function(X)  # predict scores
     print('Decision Function time:', time.time() - start)
     print()
 
@@ -194,7 +95,6 @@ if __name__ == "__main__":
     # compare with no projection, no bps, and no approximation
     print("******************************************************************")
     n_estimators = len(base_estimators)
-    n_jobs = 6
     n_estimators_list, starts, n_jobs = _partition_estimators(n_estimators,
                                                               n_jobs)
 
@@ -203,12 +103,11 @@ if __name__ == "__main__":
     objective_dim = None
     rp_method = None
 
-    start = time.time()
     all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
         delayed(_parallel_fit)(
             n_estimators_list[i],
             base_estimators[starts[i]:starts[i + 1]],
-            X_train,
+            X,
             n_estimators,
             rp_flags[starts[i]:starts[i + 1]],
             objective_dim,
@@ -232,7 +131,7 @@ if __name__ == "__main__":
             n_estimators_list[i],
             trained_estimators[starts[i]:starts[i + 1]],
             None,
-            X_test,
+            X,
             n_estimators,
             rp_flags[starts[i]:starts[i + 1]],
             jl_transformers,
@@ -245,12 +144,10 @@ if __name__ == "__main__":
     print()
 
     # unfold and generate the label matrix
-    predicted_labels_orig = np.zeros([X_test.shape[0], n_estimators])
+    predicted_labels_orig = np.zeros([X.shape[0], n_estimators])
     for i in range(n_jobs):
         predicted_labels_orig[:, starts[i]:starts[i + 1]] = np.asarray(
             all_results_pred[i]).T
-
-    ##########################################################################
 
     start = time.time()
     # model prediction
@@ -260,7 +157,7 @@ if __name__ == "__main__":
             n_estimators_list[i],
             trained_estimators[starts[i]:starts[i + 1]],
             None,
-            X_test,
+            X,
             n_estimators,
             rp_flags[starts[i]:starts[i + 1]],
             None,
@@ -272,7 +169,7 @@ if __name__ == "__main__":
     print()
 
     # unfold and generate the label matrix
-    predicted_scores_orig = np.zeros([X_test.shape[0], n_estimators])
+    predicted_scores_orig = np.zeros([X.shape[0], n_estimators])
     for i in range(n_jobs):
         predicted_scores_orig[:, starts[i]:starts[i + 1]] = np.asarray(
             all_results_scores[i]).T

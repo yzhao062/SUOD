@@ -60,6 +60,9 @@ def balanced_scheduling(time_cost_pred, n_estimators, n_jobs):
     assert (np.sum(n_estimators_list) == n_estimators)
     assert (rank_sum == np.sum(sum_check))
 
+    xdiff = [starts[n]-starts[n-1] for n in range(1,len(starts))]
+    
+    print("Split among workers BPS:", starts, xdiff)
     return n_estimators_list, starts, n_jobs
 
 
@@ -74,6 +77,7 @@ def _partition_estimators(n_estimators, n_jobs):
     n_estimators_per_job[:n_estimators % n_jobs] += 1
     starts = np.cumsum(n_estimators_per_job)
 
+    print("Split among workers default:", starts)
     return n_estimators_per_job.tolist(), [0] + starts.tolist(), n_jobs
 
 

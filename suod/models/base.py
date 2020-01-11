@@ -140,7 +140,7 @@ class SUOD(object):
         if approx_clf is not None:
             self.approx_clf = approx_clf
         else:
-            self.approx_clf = RandomForestRegressor(n_estimators=100)
+            self.approx_clf = RandomForestRegressor(n_estimators=50)
 
         if n_jobs is None:
             self.n_jobs = 1
@@ -167,7 +167,7 @@ class SUOD(object):
         # validate model approximation list
         if approx_clf_list is None:
             # the algorithms that should be be using random projection
-            self.approx_clf_list = ['LOF', 'KNN', 'ABOD']
+            self.approx_clf_list = ['LOF', 'KNN', 'LSCP']
         else:
             self.approx_clf_list = approx_clf_list
 
@@ -284,9 +284,6 @@ class SUOD(object):
         n_estimators_list, starts, n_jobs = _partition_estimators(
             self.n_estimators, n_jobs=self.n_jobs)
 
-        print(starts)  # this is the list of being split
-        start = time.time()
-
         all_approx_results = Parallel(n_jobs=n_jobs, verbose=True)(
             delayed(_parallel_approx_estimators)(
                 n_estimators_list[i],
@@ -298,7 +295,7 @@ class SUOD(object):
                 verbose=True)
             for i in range(n_jobs))
 
-        print('Balanced Scheduling Total Test Time:', time.time() - start)
+        # print('Balanced Scheduling Total Test Time:', time.time() - start)
 
         self.approximators = _unfold_parallel(all_approx_results, n_jobs)
         return self

@@ -156,7 +156,7 @@ class SUOD(object):
 
         if rp_ng_clf_list is None:
             # the algorithms that should be be using random projection
-            self.rp_ng_clf_list = ['IForest', 'PCA', 'HBOS']
+            self.rp_ng_clf_list = ['IForest', 'PCA', 'HBOS', 'MCD', 'LMDD']
         else:
             self.rp_ng_clf_list = rp_ng_clf_list
 
@@ -167,13 +167,14 @@ class SUOD(object):
         # validate model approximation list
         if approx_clf_list is None:
             # the algorithms that should be be using random projection
-            self.approx_clf_list = ['LOF', 'KNN', 'LSCP']
+            self.approx_clf_list = ['LOF', 'KNN', 'CBLOF', 'OCSVM', 'IForest']
         else:
             self.approx_clf_list = approx_clf_list
 
         if approx_ng_clf_list is None:
             # the algorithms that should be be using random projection
-            self.approx_ng_clf_list = ['IForest', 'PCA', 'HBOS', 'ABOD']
+            self.approx_ng_clf_list = ['PCA', 'HBOS', 'ABOD', 'MCD',
+                                       'LMDD', 'LSCP']
         else:
             self.approx_ng_clf_list = approx_ng_clf_list
 
@@ -292,6 +293,7 @@ class SUOD(object):
                 self.n_estimators,
                 self.approx_flags[starts[i]:starts[i + 1]],
                 self.approx_clf,
+                self.jl_transformers_[starts[i]:starts[i + 1]],
                 verbose=True)
             for i in range(n_jobs))
 
@@ -347,7 +349,7 @@ class SUOD(object):
                 self.approximators[starts[i]:starts[i + 1]],
                 X,
                 self.n_estimators,
-                self.rp_flags[starts[i]:starts[i + 1]],
+                # self.rp_flags[starts[i]:starts[i + 1]],
                 self.jl_transformers_[starts[i]:starts[i + 1]],
                 self.approx_flags[starts[i]:starts[i + 1]],
                 self.contamination,
@@ -418,7 +420,7 @@ class SUOD(object):
                 self.approximators[starts[i]:starts[i + 1]],
                 X,
                 self.n_estimators,
-                self.rp_flags[starts[i]:starts[i + 1]],
+                # self.rp_flags[starts[i]:starts[i + 1]],
                 self.jl_transformers_[starts[i]:starts[i + 1]],
                 self.approx_flags[starts[i]:starts[i + 1]],
                 verbose=True)

@@ -60,8 +60,8 @@ def balanced_scheduling(time_cost_pred, n_estimators, n_jobs):
     assert (np.sum(n_estimators_list) == n_estimators)
     assert (rank_sum == np.sum(sum_check))
 
-    xdiff = [starts[n]-starts[n-1] for n in range(1,len(starts))]
-    
+    xdiff = [starts[n] - starts[n - 1] for n in range(1, len(starts))]
+
     print("Split among workers BPS:", starts, xdiff)
     return n_estimators_list, starts, n_jobs
 
@@ -77,7 +77,9 @@ def _partition_estimators(n_estimators, n_jobs):
     n_estimators_per_job[:n_estimators % n_jobs] += 1
     starts = np.cumsum(n_estimators_per_job)
 
-    print("Split among workers default:", starts)
+    xdiff = [starts[n] - starts[n - 1] for n in range(1, len(starts))]
+
+    print("Split among workers default:", starts, xdiff)
     return n_estimators_per_job.tolist(), [0] + starts.tolist(), n_jobs
 
 
@@ -89,7 +91,6 @@ def cost_forecast_meta(clf, X, base_estimator_names):
     X_detector_code = indices_to_one_hot(clf_idx - 1, 11)
     X_shape_code_s = np.array([X.shape[0], X.shape[1]]).reshape(1, 2)
     X_shape_code = np.repeat(X_shape_code_s, len(base_estimator_names), axis=0)
-    #
     X_code = np.concatenate((X_shape_code, X_detector_code), axis=1)
     time_cost_pred = clf.predict(X_code)
 
@@ -107,6 +108,7 @@ def _parallel_fit(n_estimators, clfs, X, total_n_estimators,
         if verbose > 1:
             print("Building estimator %d of %d for this parallel run "
                   "(total %d)..." % (i + 1, n_estimators, total_n_estimators))
+
         if rp_flags[i] == 1:
             X_scaled, jlt_transformer = jl_fit_transform(X, objective_dim,
                                                          rp_method)
@@ -115,15 +117,15 @@ def _parallel_fit(n_estimators, clfs, X, total_n_estimators,
             estimator.fit(X_scaled)
             estimators.append(estimator)
         else:
-            rp_transformers.append(None)
+            # if projection is not used, use an identity matrix to keep the shape
+            rp_transformers.append(np.ones([X.shape[1], X.shape[1]]))
             estimator.fit(X)
             estimators.append(estimator)
     return estimators, rp_transformers
 
 
 def _parallel_predict(n_estimators, clfs, approximators, X, total_n_estimators,
-                      rp_flags, rp_transformers, approx_flags, contamination,
-                      verbose):
+                      rp_transformers, approx_flags, contamination, verbose):
     X = check_array(X)
 
     pred = []
@@ -133,19 +135,13 @@ def _parallel_predict(n_estimators, clfs, approximators, X, total_n_estimators,
             print("predicting with estimator %d of %d for this parallel run "
                   "(total %d)..." % (i + 1, n_estimators, total_n_estimators))
 
-        # if the random projection is needed
-        if rp_flags[i] == 1:
-            X_scaled = jl_transform(X, rp_transformers[i])
-
-        else:
-            X_scaled = X
+        # project matrix
+        X_scaled = jl_transform(X, rp_transformers[i])
 
         # turn approximator scores to labels by outlier
-        # todo: decide whether the approximation should happen on the reduced
-        # space or the original space. For now, it is on the original space
         if approx_flags[i] == 1:
             predicted_labels = score_to_label(
-                approximators[i].predict(X),
+                approximators[i].predict(X_scaled),
                 outliers_fraction=contamination)
 
         else:
@@ -157,7 +153,7 @@ def _parallel_predict(n_estimators, clfs, approximators, X, total_n_estimators,
 
 
 def _parallel_decision_function(n_estimators, clfs, approximators, X,
-                                total_n_estimators, rp_flags, rp_transformers,
+                                total_n_estimators, rp_transformers,
                                 approx_flags, verbose):
     X = check_array(X)
 
@@ -168,18 +164,12 @@ def _parallel_decision_function(n_estimators, clfs, approximators, X,
             print("predicting with estimator %d of %d for this parallel run "
                   "(total %d)..." % (i + 1, n_estimators, total_n_estimators))
 
-        # if the random projection is needed
-        if rp_flags[i] == 1:
-            X_scaled = jl_transform(X, rp_transformers[i])
-
-        else:
-            X_scaled = X
+        # project matrix
+        X_scaled = jl_transform(X, rp_transformers[i])
 
         # turn approximator scores to labels by outlier
-        # todo: decide whether the approximation should happen on the reduced
-        # space or the original space. For now, it is on the original space
         if approx_flags[i] == 1:
-            predicted_scores = approximators[i].predict(X)
+            predicted_scores = approximators[i].predict(X_scaled)
         else:
             predicted_scores = estimator.decision_function(X_scaled)
 
@@ -189,7 +179,8 @@ def _parallel_decision_function(n_estimators, clfs, approximators, X,
 
 
 def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
-                                approx_flags, approximator, verbose):
+                                approx_flags, approximator, rp_transformers,
+                                verbose):
     """
     # todo: decide whether the approximation should happen on the reduced
     # space or the original space. For now, it is on the original space.
@@ -213,6 +204,9 @@ def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
 
     # TODO: approximators can be different
     for i in range(n_estimators):
+        # project matrix
+        X_scaled = jl_transform(X, rp_transformers[i])
+
         estimator = clfs[i]
 
         check_is_fitted(estimator, ['decision_scores_'])
@@ -221,11 +215,12 @@ def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
                   "(total %d)..." % (i + 1, n_estimators, total_n_estimators))
 
         if approx_flags[i] == 1:
+            # operate on the reduce space
             pseudo_scores = estimator.decision_scores_
             # pseudo_scores = estimator.decision_function(X)
             # use the same type of approximator for all models
             base_approximater = clone(approximator)
-            base_approximater.fit(X, pseudo_scores)
+            base_approximater.fit(X_scaled, pseudo_scores)
 
             approximators.append(base_approximater)
 

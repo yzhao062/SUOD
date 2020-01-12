@@ -72,6 +72,10 @@ def jl_transform(X, jl_transformer):
     X = check_array(X)
     jl_transformer = check_array(jl_transformer)
 
+    # no need for transformation
+    if np.array_equal(jl_transformer, np.ones([X.shape[1], X.shape[1]])):
+        return X
+
     if X.shape[1] != jl_transformer.shape[0]:
         ValueError("X and jl_transformer have different dimensions.")
     return np.dot(X, jl_transformer)

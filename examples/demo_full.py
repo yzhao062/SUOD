@@ -1,296 +1,200 @@
-# %%
 import os
 import sys
 import time
+
 import numpy as np
 import scipy as sp
 
-import joblib
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
+from lightgbm import LGBMRegressor
+
 from joblib import Parallel, delayed
 
-from sklearn.preprocessing import StandardScaler
-from sklearn.ensemble import RandomForestRegressor
-
-from pyod.models.iforest import IForest
-from pyod.models.lof import LOF
-from pyod.models.ocsvm import OCSVM
-from pyod.models.pca import PCA
-from pyod.models.knn import KNN
-from pyod.models.hbos import HBOS
-from pyod.models.lscp import LSCP
+from pyod.utils.utility import standardizer
 from pyod.utils.data import evaluate_print
 
-from combo.models.score_comb import majority_vote, maximization, average
+from combo.models.score_comb import maximization, average, aom, moa
 
 # temporary solution for relative imports in case combo is not installed
 # if combo is installed, no need to use the following line
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
 
-from suod.models.base import build_codes
-from suod.models.parallel_processes import cost_forecast_meta
+from suod.models.base import SUOD
 from suod.models.parallel_processes import _parallel_fit
 from suod.models.parallel_processes import _parallel_predict
 from suod.models.parallel_processes import _parallel_decision_function
 from suod.models.parallel_processes import _partition_estimators
-from suod.models.parallel_processes import _parallel_approx_estimators
-from suod.models.parallel_processes import balanced_scheduling
+
 from suod.models.utils.utility import _unfold_parallel
+from suod.models.utils.utility import get_estimators
 
 # suppress warnings
 import warnings
 
 warnings.filterwarnings("ignore")
 
-###############################################################################
-# load files
-mat_file_list = [
-    'cardio.mat',
-    # 'satellite.mat',
-    # 'satimage-2.mat',
-    # 'mnist.mat',
-]
+if __name__ == "__main__":
 
-mat_file = mat_file_list[0]
-mat_file_name = mat_file.replace('.mat', '')
-print("\n... Processing", mat_file_name, '...')
-mat = sp.io.loadmat(os.path.join('', 'datasets', mat_file))
+    n_jobs = 6
+    approx_clf = RandomForestRegressor()
+    # load files
+    mat_file_list = [
+        # 'cardio.mat',
+        # 'satellite.mat',
+        # 'satimage-2.mat',
+        'mnist.mat',
+    ]
 
-X = mat['X']
-y = mat['y']
+    mat_file = mat_file_list[0]
+    mat_file_name = mat_file.replace('.mat', '')
+    print("\n... Processing", mat_file_name, '...')
+    mat = sp.io.loadmat(os.path.join('', 'datasets', mat_file))
 
-# standardize data to be digestible for most algorithms
-X = StandardScaler().fit_transform(X)
+    X = mat['X']
+    y = mat['y']
 
-contamination = y.sum()/len(y)
+    # split dataset into train and test
+    X_train, X_test, y_train, y_test = \
+        train_test_split(X, y, test_size=0.4, random_state=42)
 
-##############################################################################
-# initialize a set of anomaly detectors
-base_estimators = [
-    LOF(n_neighbors=5, contamination=contamination),
-    LOF(n_neighbors=15, contamination=contamination),
-    LOF(n_neighbors=25, contamination=contamination),
-    LOF(n_neighbors=35, contamination=contamination),
-    LOF(n_neighbors=45, contamination=contamination),
-    HBOS(contamination=contamination),
-    PCA(contamination=contamination),
-    OCSVM(contamination=contamination),
-    KNN(n_neighbors=5, contamination=contamination),
-    KNN(n_neighbors=15, contamination=contamination),
-    KNN(n_neighbors=25, contamination=contamination),
-    KNN(n_neighbors=35, contamination=contamination),
-    KNN(n_neighbors=45, contamination=contamination),
-    IForest(n_estimators=50, contamination=contamination),
-    IForest(n_estimators=100, contamination=contamination),
-    LOF(n_neighbors=5, contamination=contamination),
-    LOF(n_neighbors=15, contamination=contamination),
-    LOF(n_neighbors=25, contamination=contamination),
-    LOF(n_neighbors=35, contamination=contamination),
-    LOF(n_neighbors=45, contamination=contamination),
-    HBOS(contamination=contamination),
-    PCA(contamination=contamination),
-    OCSVM(contamination=contamination),
-    KNN(n_neighbors=5, contamination=contamination),
-    KNN(n_neighbors=15, contamination=contamination),
-    KNN(n_neighbors=25, contamination=contamination),
-    KNN(n_neighbors=35, contamination=contamination),
-    KNN(n_neighbors=45, contamination=contamination),
-    IForest(n_estimators=50, contamination=contamination),
-    IForest(n_estimators=100, contamination=contamination),
-    LOF(n_neighbors=5, contamination=contamination),
-    LOF(n_neighbors=15, contamination=contamination),
-    LOF(n_neighbors=25, contamination=contamination),
-    LOF(n_neighbors=35, contamination=contamination),
-    LOF(n_neighbors=45, contamination=contamination),
-    HBOS(contamination=contamination),
-    PCA(contamination=contamination),
-    OCSVM(contamination=contamination),
-    KNN(n_neighbors=5, contamination=contamination),
-    KNN(n_neighbors=15, contamination=contamination),
-    KNN(n_neighbors=25, contamination=contamination),
-    KNN(n_neighbors=35, contamination=contamination),
-    KNN(n_neighbors=45, contamination=contamination),
-    IForest(n_estimators=50, contamination=contamination),
-    IForest(n_estimators=100, contamination=contamination),
-    LSCP(detector_list=[LOF(contamination=contamination),
-                        LOF(contamination=contamination)])
-]
+    # standardize data to be digestible for most algorithms
+    X_train, X_test = standardizer(X_train, X_test)
 
-# number of the parallel jobs
-n_jobs = 6
-n_estimators = len(base_estimators)
+    contamination = y.sum() / len(y)
 
-# the algorithms that should be be using random projection
-rp_clf_list = ['LOF', 'KNN', 'ABOD']
-# the algorithms that should NOT use random projection
-rp_ng_clf_list = ['IForest', 'PCA', 'HBOS']
-# global flag for random projection
-rp_flag_global = True
-objective_dim = 6
-rp_method = 'discrete'
+    # get estimators for training and prediction
+    base_estimators = get_estimators(contamination=contamination)
 
-# build flags for random projection
-rp_flags, base_estimator_names = build_codes(n_estimators, base_estimators,
-                                             rp_clf_list, rp_ng_clf_list,
-                                             rp_flag_global)
+    ##########################################################################
+    model = SUOD(base_estimators=base_estimators, rp_flag_global=True,
+                 approx_clf=approx_clf,
+                 n_jobs=n_jobs, bps_flag=True, contamination=contamination,
+                 approx_flag_global=True)
 
-# load the pre-trained cost predictor to forecast the train cost
-clf_train = joblib.load(
-    os.path.join('../suod', 'models', 'saved_models', 'bps_train.joblib'))
+    start = time.time()
+    model.fit(X_train)  # fit all models with X
+    print('Fit time:', time.time() - start)
+    print()
 
-time_cost_pred = cost_forecast_meta(clf_train, X, base_estimator_names)
+    start = time.time()
+    model.approximate(X_train)  # conduct model approximation if it is enabled
+    print('Approximation time:', time.time() - start)
+    print()
 
-# schedule the tasks
-n_estimators_list, starts, n_jobs = balanced_scheduling(time_cost_pred,
-                                                        n_estimators, n_jobs)
+    start = time.time()
+    predicted_labels = model.predict(X_test)  # predict labels
+    print('Predict time:', time.time() - start)
+    print()
 
-print(starts)  # this is the list of being split
-start = time.time()
+    start = time.time()
+    predicted_scores = model.decision_function(X_test)  # predict scores
+    print('Decision Function time:', time.time() - start)
+    print()
 
-print('Parallel Training...')
+    ##########################################################################
+    # compare with no projection, no bps, and no approximation
+    print("******************************************************************")
+    start = time.time()
+    n_estimators = len(base_estimators)
+    n_estimators_list, starts, n_jobs = _partition_estimators(n_estimators,
+                                                              n_jobs)
 
-# TODO: code cleanup. There is an existing bug for joblib on Windows:
-# https://github.com/joblib/joblib/issues/806
-# max_nbytes can be dropped on other OS
-all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
-    delayed(_parallel_fit)(
-        n_estimators_list[i],
-        base_estimators[starts[i]:starts[i + 1]],
-        X,
-        n_estimators,
-        rp_flags[starts[i]:starts[i + 1]],
-        objective_dim,
-        rp_method=rp_method,
-        verbose=True)
-    for i in range(n_jobs))
+    rp_flags = np.zeros([n_estimators, 1])
+    approx_flags = np.zeros([n_estimators, 1])
+    objective_dim = None
+    rp_method = None
 
-print('Balanced Scheduling Total Train Time:', time.time() - start)
+    all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
+        delayed(_parallel_fit)(
+            n_estimators_list[i],
+            base_estimators[starts[i]:starts[i + 1]],
+            X_train,
+            n_estimators,
+            rp_flags[starts[i]:starts[i + 1]],
+            objective_dim,
+            rp_method=rp_method,
+            verbose=True)
+        for i in range(n_jobs))
 
-# reformat and unfold the lists. Save the trained estimators and transformers
-all_results = list(map(list, zip(*all_results)))
-trained_estimators = _unfold_parallel(all_results[0], n_jobs)
-jl_transformers = _unfold_parallel(all_results[1], n_jobs)
+    print('Orig Fit time:', time.time() - start)
+    print()
 
-###############################################################################
-# %% Model Approximation
+    all_results = list(map(list, zip(*all_results)))
+    trained_estimators = _unfold_parallel(all_results[0], n_jobs)
+    jl_transformers = _unfold_parallel(all_results[1], n_jobs)
 
-approx_clf_list = ['LOF', 'KNN']
-approx_ng_clf_list = ['IForest', 'PCA', 'HBOS', 'ABOD']
-approx_flag_global = True
+    ##########################################################################
+    start = time.time()
+    n_estimators = len(base_estimators)
+    n_estimators_list, starts, n_jobs = _partition_estimators(n_estimators,
+                                                              n_jobs)
+    # model prediction
+    all_results_pred = Parallel(n_jobs=n_jobs, max_nbytes=None,
+                                verbose=True)(
+        delayed(_parallel_predict)(
+            n_estimators_list[i],
+            trained_estimators[starts[i]:starts[i + 1]],
+            None,
+            X_test,
+            n_estimators,
+            # rp_flags[starts[i]:starts[i + 1]],
+            jl_transformers,
+            approx_flags[starts[i]:starts[i + 1]],
+            contamination,
+            verbose=True)
+        for i in range(n_jobs))
 
-# build approx code
-# this can be a pre-defined list and directly supply to the system
+    print('Orig Predict time:', time.time() - start)
+    print()
 
-approx_clf = RandomForestRegressor(n_estimators=100)
+    # unfold and generate the label matrix
+    predicted_labels_orig = np.zeros([X_test.shape[0], n_estimators])
+    for i in range(n_jobs):
+        predicted_labels_orig[:, starts[i]:starts[i + 1]] = np.asarray(
+            all_results_pred[i]).T
 
-approx_flags, base_estimator_names = build_codes(n_estimators, base_estimators,
-                                                 approx_clf_list,
-                                                 approx_ng_clf_list,
-                                                 approx_flag_global)
+    start = time.time()
+    n_estimators = len(base_estimators)
+    n_estimators_list, starts, n_jobs = _partition_estimators(n_estimators,
+                                                              n_jobs)
+    # model prediction
+    all_results_scores = Parallel(n_jobs=n_jobs, max_nbytes=None,
+                                  verbose=True)(
+        delayed(_parallel_decision_function)(
+            n_estimators_list[i],
+            trained_estimators[starts[i]:starts[i + 1]],
+            None,
+            X_test,
+            n_estimators,
+            # rp_flags[starts[i]:starts[i + 1]],
+            jl_transformers,
+            approx_flags[starts[i]:starts[i + 1]],
+            verbose=True)
+        for i in range(n_jobs))
 
-n_estimators_list, starts, n_jobs = _partition_estimators(n_estimators,
-                                                          n_jobs=n_jobs)
-print(starts)  # this is the list of being split
-start = time.time()
+    print('Orig decision_function time:', time.time() - start)
+    print()
 
-# TODO: here has a bug. For some reason, approximators do not match approx_flags
-all_approx_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
-    delayed(_parallel_approx_estimators)(
-        n_estimators_list[i],
-        trained_estimators[starts[i]:starts[i + 1]],
-        X,  # if it is a PyOD model, we do not need this
-        n_estimators,
-        approx_flags[starts[i]:starts[i + 1]],
-        approx_clf,
-        verbose=True)
-    for i in range(n_jobs))
+    # unfold and generate the label matrix
+    predicted_scores_orig = np.zeros([X_test.shape[0], n_estimators])
+    for i in range(n_jobs):
+        predicted_scores_orig[:, starts[i]:starts[i + 1]] = np.asarray(
+            all_results_scores[i]).T
+    ##########################################################################
+    predicted_scores = standardizer(predicted_scores)
+    predicted_scores_orig = standardizer(predicted_scores_orig)
 
-print('Balanced Scheduling Total Test Time:', time.time() - start)
+    evaluate_print('orig', y_test, average(predicted_scores_orig))
+    evaluate_print('new', y_test, average(predicted_scores))
 
-approximators = _unfold_parallel(all_approx_results, n_jobs)
+    evaluate_print('orig max', y_test, maximization(predicted_scores_orig))
+    evaluate_print('new max', y_test, maximization(predicted_scores))
 
+    evaluate_print('orig aom', y_test, aom(predicted_scores_orig))
+    evaluate_print('new aom', y_test, aom(predicted_scores))
 
-# %% Second BPS for prediction
-###############################################################################
-# still build the rank sum by BPS
-# load the pre-trained cost predictor to forecast the prediction cost
-clf_prediction = joblib.load(
-    os.path.join('../suod', 'models', 'saved_models', 'bps_prediction.joblib'))
-
-time_cost_pred = cost_forecast_meta(clf_prediction, X, base_estimator_names)
-
-# TODO: add a second-stage tuner for prediction stage
-
-n_estimators_list, starts, n_jobs = balanced_scheduling(time_cost_pred,
-                                                        n_estimators, n_jobs)
-
-print('Parallel Label Predicting without Approximators...')
-
-# all_results_pred = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
-#     delayed(_parallel_predict)(
-#         n_estimators_list[i],
-#         trained_estimators[starts[i]:starts[i + 1]],
-#         approximators[starts[i]:starts[i + 1]],
-#         X,
-#         n_estimators,
-#         rp_flags[starts[i]:starts[i + 1]],
-#         jl_transformers[starts[i]:starts[i + 1]],
-#         approx_flags[starts[i]:starts[i + 1]],
-#         contamination,
-#         verbose=True)
-#     for i in range(n_jobs))
-
-all_results_pred = Parallel(n_jobs=n_jobs, max_nbytes=None,
-                            verbose=True)(
-    delayed(_parallel_predict)(
-        n_estimators_list[i],
-        trained_estimators[starts[i]:starts[i + 1]],
-        approximators[starts[i]:starts[i + 1]],
-        X,
-        n_estimators,
-        rp_flags[starts[i]:starts[i + 1]],
-        jl_transformers[starts[i]:starts[i + 1]],
-        approx_flags[starts[i]:starts[i + 1]],
-        contamination,
-        verbose=True)
-    for i in range(n_jobs))
-
-# unfold and generate the label matrix
-predicted_labels = np.zeros([X.shape[0], n_estimators])
-for i in range(n_jobs):
-    predicted_labels[:, starts[i]:starts[i + 1]] = np.asarray(
-        all_results_pred[i]).T
-
-# print('Parallel Score Predicting without Approximators...')
-
-# all_results_scores = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
-#     delayed(_parallel_decision_function)(
-#         n_estimators_list[i],
-#         trained_estimators[starts[i]:starts[i + 1]],
-#         X,
-#         n_estimators,
-#         rp_flags[starts[i]:starts[i + 1]],
-#         jl_transformers[starts[i]:starts[i + 1]],
-#         verbose=True)
-#     for i in range(n_jobs))
-
-# # unfold and generate the label matrix
-# predicted_scores = np.zeros([X.shape[0], n_estimators])
-# for i in range(n_jobs):
-#     predicted_scores[:, starts[i]:starts[i + 1]] = np.asarray(
-#         all_results_scores[i]).T
-
-# # %% Check point to see whether it is working
-# ###############################################################################
-# evaluate_print('majority vote', y, majority_vote(predicted_labels))
-# evaluate_print('average', y, average(predicted_scores))
-# evaluate_print('maximization', y, maximization(predicted_scores))
-
-# clf = LOF()
-# clf.fit(X)
-# evaluate_print('LOF', y, clf.decision_scores_)
-
-# clf = IForest()
-# clf.fit(X)
-# evaluate_print('IForest', y, clf.decision_scores_)
-# ###############################################################################
+    evaluate_print('orig moa', y_test, moa(predicted_scores_orig))
+    evaluate_print('new moa', y_test, moa(predicted_scores))

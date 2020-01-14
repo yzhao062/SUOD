@@ -67,8 +67,8 @@ def _partition_estimators(n_estimators, n_jobs):
 ##############################################################################
 
 
-n_jobs = 6
-n_estimators_total = 500
+n_jobs = 5
+n_estimators_total = 1000
 
 mat_file = 'cardio.mat'
 mat_file_name = mat_file.replace('.mat', '')
@@ -115,6 +115,10 @@ predict_time = clf.predict(X_c)
 # Conduct Balanced Task Scheduling
 n_estimators_list = []
 ranks = rankdata(predict_time)
+##########################################
+ranks = 1 + ranks/len(clfs)
+##########################################
+
 rank_sum = np.sum(ranks)
 chunk_sum = rank_sum / n_jobs
 
@@ -128,6 +132,7 @@ for i in range(len(ranks) + 1):
         index_track += 1
 starts.append(len(ranks))
 
+
 for j in range(n_jobs):
     sum_check.append(np.sum(ranks[starts[j]:starts[j + 1]]))
     print('Worker', j+1, 'sum of ranks:', sum_check[j])
@@ -137,11 +142,12 @@ print()
 
 # Confirm the length of the estimators is consistent
 assert (np.sum(n_estimators_list) == n_estimators_total)
-assert (rank_sum == np.sum(sum_check))
+assert (np.abs(rank_sum - np.sum(sum_check)) < 0.1 )
 
 n_jobs = min(effective_n_jobs(n_jobs), n_estimators_total)
 total_n_estimators = sum(n_estimators_list)
-print(starts)
+xdiff = [starts[n] - starts[n - 1] for n in range(1, len(starts))]
+print(starts, xdiff)
 
 start = time.time()
 # https://github.com/joblib/joblib/issues/806
@@ -154,7 +160,6 @@ all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
         total_n_estimators,
         verbose=True)
     for i in range(n_jobs))
-time.sleep(10)
 print('Balanced Scheduling Total Time:', time.time() - start)
 
 
@@ -171,6 +176,8 @@ for estimator in clfs:
 
 n_jobs, n_estimators, starts = _partition_estimators(len(clfs), n_jobs=n_jobs)
 total_n_estimators = sum(n_estimators)
+xdiff = [starts[n] - starts[n - 1] for n in range(1, len(starts))]
+print(starts, xdiff)
 
 start = time.time()
 # https://github.com/joblib/joblib/issues/806
@@ -183,5 +190,6 @@ all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
         total_n_estimators,
         verbose=True)
     for i in range(n_jobs))
-time.sleep(10)
 print('Naive Split Total Time', time.time() - start)
+
+print(mat_file_name, n_jobs, n_estimators)

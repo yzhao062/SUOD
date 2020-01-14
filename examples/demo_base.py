@@ -125,3 +125,4 @@ if __name__ == "__main__":
     clf = IForest()
     clf.fit(X_train)
     evaluate_print('IForest', y_test, clf.decision_function(X_test))
+

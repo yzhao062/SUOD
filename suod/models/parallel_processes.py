@@ -36,18 +36,33 @@ def balanced_scheduling(time_cost_pred, n_estimators, n_jobs):
     # Conduct Balanced Task Scheduling
     n_estimators_list = []  # track the number of estimators for each worker
     ranks = rankdata(time_cost_pred)
+    ##########################################
+    # #todo: the fastest is at most 2 times costly than the slowest
+    ranks = 1 + ranks / n_estimators
+    ##########################################
     rank_sum = np.sum(ranks)
     chunk_sum = rank_sum / n_jobs
 
-    starts = [0]
+    starts_orig = [0]
     index_track = 0
     sum_check = []
 
     for i in range(len(ranks) + 1):
-        if np.sum(ranks[starts[index_track]:i]) >= chunk_sum:
-            starts.append(i)
+        if np.sum(ranks[starts_orig[index_track]:i]) >= chunk_sum:
+            starts_orig.append(i)
             index_track += 1
-    starts.append(len(ranks))
+    starts_orig.append(len(ranks))
+    
+    starts = starts_orig
+
+    # # offset for the last worker's load
+    # starts = [0]
+    # for k in range(1, n_jobs+1):
+    #     starts.append(starts_orig[k]-np.random.randint(low=1, high=k+1))
+        
+    # print(starts)
+    # starts[-1] = n_estimators
+    # print(starts)
 
     for j in range(n_jobs):
         sum_check.append(np.sum(ranks[starts[j]:starts[j + 1]]))
@@ -58,7 +73,7 @@ def balanced_scheduling(time_cost_pred, n_estimators, n_jobs):
 
     # Confirm the length of the estimators is consistent
     assert (np.sum(n_estimators_list) == n_estimators)
-    assert (rank_sum == np.sum(sum_check))
+    assert (np.abs(rank_sum - np.sum(sum_check)) < 0.1)
 
     xdiff = [starts[n] - starts[n - 1] for n in range(1, len(starts))]
 
@@ -182,8 +197,6 @@ def _parallel_approx_estimators(n_estimators, clfs, X, total_n_estimators,
                                 approx_flags, approximator, rp_transformers,
                                 verbose):
     """
-    # todo: decide whether the approximation should happen on the reduced
-    # space or the original space. For now, it is on the original space.
     Parameters
     ----------
     n_estimators

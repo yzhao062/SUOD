@@ -26,7 +26,7 @@ def indices_to_one_hot(data, nb_classes):
     return np.eye(nb_classes)[targets]
 
 
-def build_cost_predictor(file_name, output_file):
+def build_cost_predictor(file_name, output_file, save_to_local=True):
     # read in the data file
     WS = pd.read_excel(os.path.join('saved_models', file_name),
                        sheet_name='sheet1').drop(columns=['File'])
@@ -101,8 +101,9 @@ def build_cost_predictor(file_name, output_file):
 
     clf.fit(X, y)
 
-    # save to the local
-    dump(clf, os.path.join("saved_models", output_file))
+    if save_to_local:
+        # save to the local
+        dump(clf, os.path.join("saved_models", output_file))
 
 
 if __name__ == "__main__":

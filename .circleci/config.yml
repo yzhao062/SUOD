@@ -35,7 +35,6 @@ jobs:
             pip install -r requirements.txt
             pip install pandas
             pip install xlrd>=1.0.0
-            conda install xlrd
             pip install pytest
             pip install pytest-cov
 

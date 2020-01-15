@@ -185,7 +185,7 @@ be found at `Moving to require Python 3 <https://python3statement.org/>`_.
 
 
 **More to come...**
-Last updated on Jan 11th, 2020.
+Last updated on Jan 14th, 2020.
 
 Feel free to star for the future update :)
 

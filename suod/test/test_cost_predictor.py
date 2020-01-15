@@ -16,11 +16,14 @@ class TestCostPredictor(unittest.TestCase):
         pass
 
     def test_build(self):
+        this_directory = os.path.abspath(os.path.dirname(__file__))
         build_cost_predictor(
-            file_name=os.path.join('saved_models', 'summary_train.txt'),
+            file_name=os.path.join(this_directory, 'saved_models',
+                                   'summary_train.txt'),
             output_file="bps_train.joblib",
             save_to_local=False)
         build_cost_predictor(
-            file_name=os.path.join('saved_models', 'summary_prediction.txt'),
+            file_name=os.path.join(this_directory, 'saved_models',
+                                   'summary_prediction.txt'),
             output_file="bps_prediction.joblib",
             save_to_local=False)

@@ -28,44 +28,24 @@ def indices_to_one_hot(data, nb_classes):
 
 def build_cost_predictor(file_name, output_file, save_to_local=True):
     # read in the data file
-    WS = pd.read_excel(os.path.join('saved_models', file_name),
-                       sheet_name='sheet1').drop(columns=['File'])
+    # WS = pd.read_excel(os.path.join('saved_models', file_name),
+    #                    sheet_name='sheet1').drop(columns=['File'])
+    #
+    # WS_np = WS.to_numpy().astype('float')
+    WS_np = np.loadtxt(file_name, delimiter=',')
 
-    WS_np = WS.to_numpy().astype('float')
-
-    X1 = []
-    y1 = []
+    X = []
+    y = []
 
     for i in range(WS_np.shape[0]):
         for j in range(4, 14):
-            X1.append([WS_np[i][0], WS_np[i][1], WS_np[i][2], j - 4])
-            y1.append(WS_np[i][j])
+            X.append([WS_np[i][0], WS_np[i][1], WS_np[i][2], j - 4])
+            y.append(WS_np[i][j])
 
-        X1.append([WS_np[i][0], WS_np[i][1], WS_np[i][2], j - 3])
-        y1.append(np.mean(y1[-10:]))
+        X.append([WS_np[i][0], WS_np[i][1], WS_np[i][2], j - 3])
+        y.append(np.mean(y[-10:]))
 
-    X1 = np.asarray(X1)
-
-    # build the second dataset
-    WS = pd.read_excel(os.path.join('saved_models', file_name),
-                       sheet_name='sheet2').drop(columns=['File'])
-    WS_np = WS.to_numpy().astype('float')
-
-    X2 = []
-    y2 = []
-    for i in range(WS_np.shape[0]):
-        for j in range(4, 14):
-            X2.append([WS_np[i][0], WS_np[i][1], WS_np[i][2], j - 4])
-            y2.append(WS_np[i][j])
-
-        X2.append([WS_np[i][0], WS_np[i][1], WS_np[i][2], j - 3])
-        y2.append(np.mean(y1[-10:]))
-
-    X2 = np.asarray(X2)
-
-    # combine both datasets
-    X = np.concatenate([X1, X2])
-    y = np.concatenate([y1, y2])
+    X = np.asarray(X)
 
     nb_classes = 11
     data = X[:, 3].astype(int)
@@ -107,7 +87,11 @@ def build_cost_predictor(file_name, output_file, save_to_local=True):
 
 
 if __name__ == "__main__":
-    build_cost_predictor(file_name="summary_train.xlsx",
-                         output_file="bps_train.joblib")
-    build_cost_predictor(file_name="summary_prediction.xlsx",
-                         output_file="bps_prediction.joblib")
+    build_cost_predictor(
+        file_name=os.path.join('saved_models', 'summary_train.txt'),
+        output_file="bps_train.joblib",
+        save_to_local=False)
+    build_cost_predictor(
+        file_name=os.path.join('saved_models', 'summary_prediction.txt'),
+        output_file="bps_prediction.joblib",
+        save_to_local=False)

@@ -10,7 +10,8 @@ from sklearn.utils.testing import assert_true
 import numpy as np
 
 # temporary solution for relative imports in case pyod is not installed
-# if pyod is installed, no need to use the following line
+# if suod
+# is installed, no need to use the following line
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from suod.models.base import SUOD

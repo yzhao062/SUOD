@@ -79,11 +79,3 @@ def jl_transform(X, jl_transformer):
     if X.shape[1] != jl_transformer.shape[0]:
         ValueError("X and jl_transformer have different dimensions.")
     return np.dot(X, jl_transformer)
-
-
-# %%
-
-X = np.random.random([30, 8])
-X2 = np.random.random([3, 8])
-X_transformed, jl_transformer = jl_fit_transform(X, 5, method='toeplitz')
-X2_transformed = jl_transform(X2, jl_transformer)

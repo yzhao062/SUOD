@@ -1,4 +1,4 @@
-SUOD: An Acceleration System for Large Scale Unsupervised Anomaly Detection
+SUOD: An Acceleration System for Large-Scale Unsupervised Anomaly Detection
 ===========================================================================
 
 **Deployment & Documentation & Stats**
@@ -51,13 +51,13 @@ SUOD: An Acceleration System for Large Scale Unsupervised Anomaly Detection
 ----
 
 
-**SUOD** (Toward **S**\calable **U**\nsupervised **O**\utlier **D**\etection) is an **acceleration framework for large scale unsupervised outlier detector training and prediction**.
+**SUOD** (**S**\calable **U**\nsupervised **O**\utlier **D**\etection) is an **acceleration framework for large-scale unsupervised outlier detector training and prediction**.
 Notably, anomaly detection is often formulated as an unsupervised problem since the ground truth is expensive to acquire.
-As a result, analysts often build many diversified models and further combine them (sometimes with rule-based models)---this has become a standard process in many industries to 
-offset the challenges of the data imbalance and unsupervised nature. However, **building a large number of unsupervised models are very costly or even infeasible on high-dimensional, large datasets**.
+To compensate for the unstable nature of unsupervised algorithms, practitioners often build a large number of models for further combination and analysis.
+**However, this poses scalability challenges in high-dimensional, large datasets**.
 
-SUOD is therefore proposed to alleviate, if not fully fix, this problem.
-The focus of SUOD is **to accelerate the training and prediction when a large number of anomaly detectors are presented**.
+SUOD is therefore proposed to fix the scalability problem. The key purpose is
+**to accelerate the training and prediction when a large number of anomaly detectors are presented**, and preserve the prediction capacity.
 
 
 **API Demo**\ :

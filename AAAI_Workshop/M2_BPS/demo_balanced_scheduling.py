@@ -68,7 +68,7 @@ def _partition_estimators(n_estimators, n_jobs):
 
 
 n_jobs = 5
-n_estimators_total = 1000
+n_estimators_total = 100
 
 mat_file = 'cardio.mat'
 mat_file_name = mat_file.replace('.mat', '')

@@ -172,10 +172,10 @@ def cost_forecast_meta(clf, X, base_estimator_names):
 
 if __name__ == "__main__":
     
-    n_jobs = 4
+    n_jobs = 8
     n_estimators_total = 1000
     
-    mat_file = 'cardio.mat'
+    mat_file = 'mnist.mat'
     mat_file_name = mat_file.replace('.mat', '')
     print("\n... Processing", mat_file_name, '...')
     mat = sp.io.loadmat(os.path.join('../datasets', mat_file))
@@ -184,10 +184,7 @@ if __name__ == "__main__":
     y = mat['y']
     
     X = StandardScaler().fit_transform(X)
-    
-    # load the pre-trained model cost predictor
-    clf = load('rf_predictor.joblib')
-    
+        
     classifiers = {
         1: ABOD(n_neighbors=10),
         2: CBLOF(check_estimator=False),
@@ -215,7 +212,7 @@ if __name__ == "__main__":
     }
     
     
-    clfs = np.random.choice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    clfs = np.random.choice([1, 3, 4, 5, 6, 7, 8, 9, 10],
                         size=n_estimators_total)
 
     clfs = np.sort(clfs)
@@ -256,7 +253,7 @@ if __name__ == "__main__":
 
     print('Balanced Scheduling Total Train Time:', time.time() - start)
     #############################################
-    
+    start = time.time()
     n_estimators_list, starts, n_jobs = _partition_estimators(n_estimators_total, n_jobs)
     xdiff = [starts[n] - starts[n - 1] for n in range(1, len(starts))]
     print(starts, xdiff)

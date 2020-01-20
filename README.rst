@@ -56,8 +56,8 @@ Notably, anomaly detection is often formulated as an unsupervised problem since 
 To compensate for the unstable nature of unsupervised algorithms, practitioners often build a large number of models for further combination and analysis.
 **However, this poses scalability challenges in high-dimensional, large datasets**.
 
-**SUOD** is therefore proposed to fix the problem  ****. The key purpose is
-**to accelerate the training and prediction when a large number of anomaly detectors are presented**, while preserving the prediction capacity. 
+**SUOD** is therefore proposed to fix the problem. The key focus is to
+**accelerate the training and prediction when a large number of anomaly detectors are presented**, while preserving the prediction capacity.
 As shown in the figure below, **SUOD** has three modules that cover complementary aspects: random projection (**data level**), pseudo-supervised approximation (**model level**), and balanced parallel scheduling (**system level**).
 
 .. image:: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/system_overview.png
@@ -189,7 +189,7 @@ be found at `Moving to require Python 3 <https://python3statement.org/>`_.
 
 
 **More to come...**
-Last updated on Jan 16, 2020.
+Last updated on Jan 20, 2020.
 
 Feel free to star for the future update :)
 

@@ -31,31 +31,31 @@ warnings.filterwarnings("ignore")
 
 # not all the mat files are included
 mat_file_list = [
-    # 'annthyroid.mat',
-    # 'BreastW.mat',
+    'annthyroid.mat',
+    'BreastW.mat',
     'cardio.mat',
-    # 'glass.mat',
+    'glass.mat',
     # 'http_n.mat',
-    # 'ionosphere.mat',
-    # 'letter.mat',
-    # 'lympho.mat',
-    # 'mammography.mat',
-    # 'mnist.mat',
-    # 'musk.mat',
-    # 'optdigits.mat',
-    # 'pendigits.mat',
-    # 'pima.mat',
+    'ionosphere.mat',
+    'letter.mat',
+    'lympho.mat',
+    'mammography.mat',
+    'mnist.mat',
+    'musk.mat',
+    'optdigits.mat',
+    'pendigits.mat',
+    'pima.mat',
     'satellite.mat',
     'satimage-2.mat',
-    # 'seismic.mat',
-    # 'shuttle.mat',
-    # 'smtp_n.mat',
-    # 'speech.mat',
-    # 'vertebral.mat',
-    # 'vowels.mat',
-    # 'thyroid.mat',
-    # 'wbc.mat',
-    # 'wine.mat'
+    'seismic.mat',
+    'shuttle.mat',
+    'smtp_n.mat',
+    'speech.mat',
+    'vertebral.mat',
+    'vowels.mat',
+    'thyroid.mat',
+    'wbc.mat',
+    'wine.mat'
 ]
 
 n_iter = 10
@@ -74,7 +74,7 @@ for mat_file in mat_file_list:
         print('skipped', mat_file_name)
         continue
 
-    dim_new = int(X.shape[1] / 2)
+    dim_new = int(X.shape[1] / 1.5)
 
     original_roc = []
     original_prn = []

@@ -164,9 +164,7 @@ Alternatively, you could clone and run setup.py file:
 
 * Python 3.5, 3.6, or 3.7
 * joblib
-* matplotlib (**optional for running examples**)
 * numpy>=1.13
-* numba>=0.35
 * pandas (**optional for building the cost forecast model**)
 * pyod
 * scipy>=0.19.1
@@ -185,7 +183,7 @@ be found at `Moving to require Python 3 <https://python3statement.org/>`_.
 
 
 **More to come...**
-Last updated on Jan 14th, 2020.
+Last updated on Jan 16, 2020.
 
 Feel free to star for the future update :)
 

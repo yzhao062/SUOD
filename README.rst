@@ -53,18 +53,18 @@ SUOD: An Acceleration System for Large-Scale Unsupervised Anomaly Detection
 
 **SUOD** (**S**\calable **U**\nsupervised **O**\utlier **D**\etection) is an **acceleration framework for large-scale unsupervised outlier detector training and prediction**.
 Notably, anomaly detection is often formulated as an unsupervised problem since the ground truth is expensive to acquire.
-To compensate for the unstable nature of unsupervised algorithms, practitioners often build a large number of models for further combination and analysis.
-**However, this poses scalability challenges in high-dimensional, large datasets**.
+To compensate for the unstable nature of unsupervised algorithms, practitioners often build a large number of models for further combination and analysis, e.g., taking the average or majority vote.
+**However, this poses scalability challenges in high-dimensional, large datasets**, especially for proximity-base models operating in Euclidean space.
 
-**SUOD** is therefore proposed to fix the problem. The key focus is to
+**SUOD** is therefore proposed to fix the problem at three complementary levels. As mentioned, the key focus is to
 **accelerate the training and prediction when a large number of anomaly detectors are presented**, while preserving the prediction capacity.
-As shown in the figure below, **SUOD** has three modules that cover complementary aspects: random projection (**data level**), pseudo-supervised approximation (**model level**), and balanced parallel scheduling (**system level**).
+As shown in the figure below, **SUOD** has three modules that cover different aspects: random projection (**data level**), pseudo-supervised approximation (**model level**), and balanced parallel scheduling (**system level**).
 
 .. image:: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/system_overview.png
    :target: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/system_overview.png
    :alt: SUOD Flowchart
 
-
+----
 
 **API Demo**\ :
 
@@ -79,20 +79,20 @@ As shown in the figure below, **SUOD** has three modules that cover complementar
            LOF(n_neighbors=5, contamination=contamination),
            LOF(n_neighbors=15, contamination=contamination),
            LOF(n_neighbors=25, contamination=contamination),
-           LOF(n_neighbors=35, contamination=contamination),
-           LOF(n_neighbors=45, contamination=contamination),
            HBOS(contamination=contamination),
            PCA(contamination=contamination),
            OCSVM(contamination=contamination),
            KNN(n_neighbors=5, contamination=contamination),
            KNN(n_neighbors=15, contamination=contamination),
-           KNN(n_neighbors=25, contamination=contamination),
-           KNN(n_neighbors=35, contamination=contamination)]
+           KNN(n_neighbors=25, contamination=contamination)]
 
        # initialize a SUOD model with all features turned on
        model = SUOD(base_estimators=base_estimators,
-                    n_jobs=6, bps_flag=True,
-                    contamination=contamination, approx_flag_global=False)
+                    n_jobs=6,
+                    rp_flag_global=True,  # global flag for random projection
+                    bps_flag=True,  # global flag for balanced parallel scheduling
+                    approx_flag_global=False,  # global flag for model approximation
+                    contamination=contamination)
 
        model.fit(X_train)  # fit all models with X
        model.approximate(X_train)  # conduct model approximation if it is enabled
@@ -136,9 +136,7 @@ Reproduction Instructions
 All three modules can be **executed separately** and the demo codes are in /AAAI_Workshop/{M1_RP, M2_BPS, and M3_PSA}.
 For instance, you could navigate to /M1_RP/demo_random_projection.py. Demo codes all start with "demo_*.py".
 
-**A full example may be found in demo_full.py under the root directory.**
-
-**Examples** can be found under /examples folder; run "demo_base.py" for
+**The examples for the full framework** can be found under /examples folder; run "demo_base.py" for
 a simplified example. Run "demo_full.py" for a full example.
 
 ------------
@@ -189,7 +187,7 @@ be found at `Moving to require Python 3 <https://python3statement.org/>`_.
 
 
 **More to come...**
-Last updated on Jan 20, 2020.
+Last updated on Jan 22, 2020.
 
 Feel free to star for the future update :)
 

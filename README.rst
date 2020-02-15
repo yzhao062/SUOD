@@ -1,5 +1,5 @@
-SUOD: An Acceleration System for Large-Scale Unsupervised Anomaly Detection
-===========================================================================
+SUOD: A Scalable Unsupervised Outlier Detection Framework
+=========================================================
 
 **Deployment & Documentation & Stats**
 
@@ -58,12 +58,14 @@ To compensate for the unstable nature of unsupervised algorithms, practitioners 
 
 **SUOD** is therefore proposed to address the challenge at three complementary levels:  random projection (**data level**), pseudo-supervised approximation (**model level**), and balanced parallel scheduling (**system level**).
 As mentioned, the key focus is to **accelerate the training and prediction when a large number of anomaly detectors are presented**, while preserving the prediction capacity.
+Since its inception in Jan 2019, SUOD has been successfully used in various academic researches and industry applications, include PyOD [#Zhao2019PyOD]_ and `IQVIA <https://www.iqvia.com/>`_ medical claim analysis.
+
 
 .. image:: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/system_overview.png
    :target: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/system_overview.png
    :alt: SUOD Flowchart
 
-PyOD is featured for:
+SUOD is featured for:
 
 * **Unified APIs, detailed documentation, and examples** for the easy use.
 * **Optimized performance with JIT and parallelization** when possible, using `numba <https://github.com/numba/numba>`_ and `joblib <https://github.com/joblib/joblib>`_.
@@ -190,7 +192,7 @@ be found at `Moving to require Python 3 <https://python3statement.org/>`_.
 
 
 **More to come...**
-Last updated on Jan 22, 2020.
+Last updated on Feb 22th, 2020.
 
 Feel free to star for the future update :)
 
@@ -200,3 +202,5 @@ References
 ----------
 
 .. [#Johnson1984Extensions] Johnson, W.B. and Lindenstrauss, J., 1984. Extensions of Lipschitz mappings into a Hilbert space. *Contemporary mathematics*, 26(189-206), p.1.
+
+.. [#Zhao2019PyOD] Zhao, Y., Nasrullah, Z. and Li, Z., 2019. PyOD: A Python Toolbox for Scalable Outlier Detection. *Journal of Machine Learning Research*, 20, pp.1-7.

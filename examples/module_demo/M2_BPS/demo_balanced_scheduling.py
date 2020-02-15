@@ -24,6 +24,7 @@ from sklearn.preprocessing import StandardScaler
 from joblib import effective_n_jobs
 from joblib import Parallel, delayed
 from copy import deepcopy
+import arff
 
 from pyod.utils.utility import score_to_label
 from joblib import load
@@ -41,6 +42,31 @@ from pyod.models.lscp import LSCP
 
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
+    
+def read_arff(file_path, misplaced_list):
+    misplaced = False
+    for item in misplaced_list:
+        if item in file_path:
+            misplaced = True
+
+    file = arff.load(open(file_path))
+    data_value = np.asarray(file['data'])
+    attributes = file['attributes']
+
+    X = data_value[:, 0:-2]
+    if not misplaced:
+        y = data_value[:, -1]
+    else:
+        y = data_value[:, -2]
+    y[y == 'no'] = 0
+    y[y == 'yes'] = 1
+    y = y.astype('float').astype('int').ravel()
+
+    if y.sum() > len(y):
+        print(attributes)
+        raise ValueError('wrong sum')
+
+    return X, y, attributes
     
 def indices_to_one_hot(data, nb_classes):
     """Convert an iterable of indices to one-hot encoded labels."""
@@ -157,8 +183,8 @@ def cost_forecast_meta(clf, X, base_estimator_names):
     'MCD': 8,
     'OCSVM': 9,
     'PCA': 10,
-    'UNK': 11
-}
+    'UNK': 11}
+    
     clf_idx = np.asarray(
         list(map(clf_idx_mapping.get, base_estimator_names)))
 
@@ -171,11 +197,73 @@ def cost_forecast_meta(clf, X, base_estimator_names):
     return time_cost_pred
 
 if __name__ == "__main__":
+    #############################################################################
+    misplaced_list = ['Arrhythmia', 'Cardiotocography', 'Hepatitis', 'ALOI',
+                      'KDDCup99']
+    arff_list = [
+    # os.path.join('../semantic', 'Annthyroid', 'Annthyroid_withoutdupl_07.arff'),
+    # os.path.join('../semantic', 'Arrhythmia', 'Arrhythmia_withoutdupl_46.arff'),
+    # os.path.join('../semantic', 'Cardiotocography', 'Cardiotocography_withoutdupl_22.arff'),
+    # os.path.join('../semantic', 'HeartDisease', 'HeartDisease_withoutdupl_44.arff'),
+    # os.path.join('../semantic', 'Hepatitis', 'Hepatitis_withoutdupl_16.arff'),
+    # os.path.join('../semantic', 'InternetAds', 'InternetAds_withoutdupl_norm_19.arff'),
+    # os.path.join('../semantic', 'PageBlocks', 'PageBlocks_withoutdupl_09.arff'),
+    # os.path.join('../semantic', 'Parkinson', 'Parkinson_withoutdupl_75.arff'),
+    # os.path.join('../semantic', 'Pima', 'Pima_withoutdupl_35.arff'),
+    # os.path.join('semantic', 'SpamBase', 'SpamBase_withoutdupl_40.arff'),
+    # os.path.join('../semantic', 'Stamps', 'Stamps_withoutdupl_09.arff'),
+    # os.path.join('../semantic', 'Wilt', 'Wilt_withoutdupl_05.arff'),
+#    #
+    # os.path.join('../literature', 'ALOI', 'ALOI_withoutdupl.arff'),
+    # os.path.join('../literature', 'Glass', 'Glass_withoutdupl_norm.arff'),
+    # os.path.join('literature', 'Ionosphere', 'Ionosphere_withoutdupl_norm.arff'),
+    # os.path.join('../literature', 'KDDCup99', 'KDDCup99_original.arff'),
+    # os.path.join('../literature', 'Lymphography', 'Lymphography_original.arff'),
+    # os.path.join('../literature', 'PenDigits', 'PenDigits_withoutdupl_norm_v01.arff'),
+    # os.path.join('../literature', 'Shuttle', 'Shuttle_withoutdupl_v01.arff'),
+    # os.path.join('../literature', 'Waveform', 'Waveform_withoutdupl_v01.arff'),
+    # os.path.join('../literature', 'WBC', 'WBC_withoutdupl_v01.arff'),
+    # os.path.join('../literature', 'WDBC', 'WDBC_withoutdupl_v01.arff'),
+    # os.path.join('../literature', 'WPBC', 'WPBC_withoutdupl_norm.arff')
+    ]
+
+    file_names = [
+        # 'Annthyroid',
+        # 'Arrhythmia',
+        # 'Cardiotocography',
+        # 'HeartDisease',  # too small
+        # 'Hepatitis',  # too small
+        # 'InternetAds',
+        # 'PageBlocks',
+        # 'Parkinson',  # too small
+        # 'Pima',
+        # 'SpamBase',
+        # 'Stamps',
+        # 'Wilt',
+    #    #
+        # 'ALOI', # too large
+        # 'Glass', # too small
+        # 'Ionosphere',
+        # 'KDDCup99', # too large
+        # 'Lymphography', # data type X contains categorical
+        # 'PenDigits',
+        # 'Shuttle',
+        # 'Waveform',
+        # 'WBC', # too small
+        # 'WDBC', # too small
+        # 'WPBC', # too small
+    ]
     
-    n_jobs = 8
-    n_estimators_total = 1000
+    assert (len(arff_list) == len(file_names))
     
-    mat_file = 'mnist.mat'
+    # arff_file = arff_list[0]
+    # arff_file_name = file_names[0]
+    # X, y, attributes = read_arff(arff_file, misplaced_list)
+    
+    n_jobs = 2
+    n_estimators_total = 500
+    
+    mat_file = 'cardio.mat'
     mat_file_name = mat_file.replace('.mat', '')
     print("\n... Processing", mat_file_name, '...')
     mat = sp.io.loadmat(os.path.join('../datasets', mat_file))

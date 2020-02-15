@@ -56,13 +56,19 @@ Notably, anomaly detection is often formulated as an unsupervised problem since 
 To compensate for the unstable nature of unsupervised algorithms, practitioners often build a large number of models for further combination and analysis, e.g., taking the average or majority vote.
 **However, this poses scalability challenges in high-dimensional, large datasets**, especially for proximity-base models operating in Euclidean space.
 
-**SUOD** is therefore proposed to fix the problem at three complementary levels. As mentioned, the key focus is to
-**accelerate the training and prediction when a large number of anomaly detectors are presented**, while preserving the prediction capacity.
-As shown in the figure below, **SUOD** has three modules that cover different aspects: random projection (**data level**), pseudo-supervised approximation (**model level**), and balanced parallel scheduling (**system level**).
+**SUOD** is therefore proposed to address the challenge at three complementary levels:  random projection (**data level**), pseudo-supervised approximation (**model level**), and balanced parallel scheduling (**system level**).
+As mentioned, the key focus is to **accelerate the training and prediction when a large number of anomaly detectors are presented**, while preserving the prediction capacity.
 
 .. image:: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/system_overview.png
    :target: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/system_overview.png
    :alt: SUOD Flowchart
+
+PyOD is featured for:
+
+* **Unified APIs, detailed documentation, and examples** for the easy use.
+* **Optimized performance with JIT and parallelization** when possible, using `numba <https://github.com/numba/numba>`_ and `joblib <https://github.com/joblib/joblib>`_.
+* **Fully compatible with the models in PyOD**.
+* **Customizable modules and flexible design**: each module may be turned on/off or totally replaced by custom functions.
 
 ----
 
@@ -87,8 +93,7 @@ As shown in the figure below, **SUOD** has three modules that cover different as
            KNN(n_neighbors=25, contamination=contamination)]
 
        # initialize a SUOD model with all features turned on
-       model = SUOD(base_estimators=base_estimators,
-                    n_jobs=6,
+       model = SUOD(base_estimators=base_estimators, n_jobs=6,  # number of workers
                     rp_flag_global=True,  # global flag for random projection
                     bps_flag=True,  # global flag for balanced parallel scheduling
                     approx_flag_global=False,  # global flag for model approximation
@@ -101,6 +106,9 @@ As shown in the figure below, **SUOD** has three modules that cover different as
 
 
 ----
+
+A preliminary version (`accepted at AAAI-20 Security Workshop <http://aics.site/AICS2020/>`_) can be accessed `here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
+The extended version (under submission at `KDD 2020 (ADS track) <https://www.kdd.org/kdd2020/>`_) can be accessed `here <http://www.andrew.cmu.edu/user/yuezhao2/papers/20-kdd-insubmission-suod.pdf>`_.
 
 
 If you use SUOD in a scientific publication, we would appreciate citations to the following paper::
@@ -115,11 +123,6 @@ If you use SUOD in a scientific publication, we would appreciate citations to th
 ::
 
     Yue Zhao, Xueying Ding, Jianing Yang, Haoping Bai, "Toward Scalable Unsupervised Outlier Detection". Workshops at the Thirty-Fourth AAAI Conference on Artificial Intelligence, 2020.
-
-
-A preliminary version of paper can be accessed `here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
-The revised and extended version will be submitted to `KDD 2020 (ADS track) <https://www.kdd.org/kdd2020/>`_.
-[`Preprint <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_], [`slides <https://www.andrew.cmu.edu/user/yuezhao2/misc/10715-SUOD-Toward-Scalable-Unsupervised-Outlier-Detection.pdf>`_], [`AICS <http://aics.site/AICS2020/>`_]
 
 
 **Table of Contents**\ :

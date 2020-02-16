@@ -3,3 +3,4 @@ v<0.0.1>, <01/04/2020> -- Turn on autotest and coverage.
 v<0.0.2>, <01/05/2020> -- Refactor code for better import.
 v<0.0.2>, <01/05/2020> -- Improve code coverage.
 v<0.0.2>, <01/11/2020> -- Full code refactor.
+v<0.0.3>, <02/15/2020> -- Add documentation.

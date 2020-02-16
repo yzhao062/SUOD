@@ -1,13 +1,13 @@
-suod.models.utils package
+suod.utils package
 =========================
 
 Submodules
 ----------
 
-suod.models.utils.utility module
+suod.utils.utility module
 --------------------------------
 
-.. automodule:: suod.models.utils.utility
+.. automodule:: suod.utils.utility
    :members:
    :undoc-members:
    :show-inheritance:
@@ -16,7 +16,7 @@ suod.models.utils.utility module
 Module contents
 ---------------
 
-.. automodule:: suod.models.utils
+.. automodule:: suod.utils
    :members:
    :undoc-members:
    :show-inheritance:

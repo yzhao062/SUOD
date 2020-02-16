@@ -29,7 +29,7 @@ from suod.models.parallel_processes import _parallel_predict
 from suod.models.parallel_processes import _parallel_decision_function
 from suod.models.parallel_processes import _partition_estimators
 from suod.models.parallel_processes import _parallel_approx_estimators
-from suod.models.utils.utility import _unfold_parallel
+from ..utils.utility import _unfold_parallel
 
 import warnings
 from collections import defaultdict

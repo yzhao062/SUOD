@@ -20,8 +20,6 @@ from pyod.models.lscp import LSCP
 from pyod.utils.utility import standardizer
 from pyod.utils.data import evaluate_print
 
-from combo.models.score_comb import majority_vote, maximization, average
-
 # suppress warnings
 import warnings
 
@@ -33,15 +31,11 @@ sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
 
 from suod.models.base import SUOD
-from suod.models.parallel_processes import _partition_estimators
-from suod.models.parallel_processes import cost_forecast_meta
 from suod.models.parallel_processes import _parallel_fit
 from suod.models.parallel_processes import _parallel_predict
 from suod.models.parallel_processes import _parallel_decision_function
 from suod.models.parallel_processes import _partition_estimators
-from suod.models.parallel_processes import _parallel_approx_estimators
-from suod.models.parallel_processes import balanced_scheduling
-from suod.models.utils.utility import _unfold_parallel
+from suod.utils.utility import _unfold_parallel
 
 if __name__ == "__main__":
     # load files

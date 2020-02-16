@@ -85,7 +85,28 @@ SUOD is featured for:
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Contents: Getting Started
+
+   install
+   example
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents: Documentation
+
+   api_cc
+   api
+
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Additional Information
+
+   about
+   faq
+   whats_new
 
 
 ----

@@ -6,9 +6,7 @@ import numpy as np
 import scipy as sp
 
 from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
-from lightgbm import LGBMRegressor
 
 from joblib import Parallel, delayed
 
@@ -28,8 +26,8 @@ from suod.models.parallel_processes import _parallel_predict
 from suod.models.parallel_processes import _parallel_decision_function
 from suod.models.parallel_processes import _partition_estimators
 
-from suod.models.utils.utility import _unfold_parallel
-from suod.models.utils.utility import get_estimators
+from suod.utils.utility import _unfold_parallel
+from suod.utils.utility import get_estimators
 
 # suppress warnings
 import warnings

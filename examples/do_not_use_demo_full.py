@@ -18,9 +18,6 @@ from pyod.models.pca import PCA
 from pyod.models.knn import KNN
 from pyod.models.hbos import HBOS
 from pyod.models.lscp import LSCP
-from pyod.utils.data import evaluate_print
-
-from combo.models.score_comb import majority_vote, maximization, average
 
 # temporary solution for relative imports in case combo is not installed
 # if combo is installed, no need to use the following line
@@ -31,11 +28,10 @@ from suod.models.base import build_codes
 from suod.models.parallel_processes import cost_forecast_meta
 from suod.models.parallel_processes import _parallel_fit
 from suod.models.parallel_processes import _parallel_predict
-from suod.models.parallel_processes import _parallel_decision_function
 from suod.models.parallel_processes import _partition_estimators
 from suod.models.parallel_processes import _parallel_approx_estimators
 from suod.models.parallel_processes import balanced_scheduling
-from suod.models.utils.utility import _unfold_parallel
+from suod.utils.utility import _unfold_parallel
 
 # suppress warnings
 import warnings

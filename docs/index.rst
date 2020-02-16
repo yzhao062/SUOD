@@ -13,6 +13,12 @@ Welcome to SUOD's documentation!
    :target: https://pypi.org/project/suod/
    :alt: PyPI version
 
+
+.. image:: https://readthedocs.org/projects/suod/badge/?version=latest
+   :target: https://suod.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
+
 .. image:: https://img.shields.io/github/stars/yzhao062/suod.svg
    :target: https://github.com/yzhao062/suod/stargazers
    :alt: GitHub stars
@@ -65,6 +71,16 @@ To compensate for the unstable nature of unsupervised algorithms, practitioners 
 As mentioned, the key focus is to **accelerate the training and prediction when a large number of anomaly detectors are presented**, while preserving the prediction capacity.
 Since its inception in Jan 2019, SUOD has been successfully used in various academic researches and industry applications, include PyOD :cite:`a-zhao2019pyod` and `IQVIA <https://www.iqvia.com/>`_ medical claim analysis.
 
+
+SUOD is featured for:
+
+* **Unified APIs, detailed documentation, and examples** for the easy use.
+* **Optimized performance with JIT and parallelization** when possible, using `numba <https://github.com/numba/numba>`_ and `joblib <https://github.com/joblib/joblib>`_.
+* **Fully compatible with the models in PyOD**.
+* **Customizable modules and flexible design**: each module may be turned on/off or totally replaced by custom functions.
+
+
+----
 
 
 .. toctree::

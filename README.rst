@@ -7,6 +7,12 @@ SUOD: A Scalable Unsupervised Outlier Detection Framework
    :target: https://pypi.org/project/suod/
    :alt: PyPI version
 
+
+.. image:: https://readthedocs.org/projects/suod/badge/?version=latest
+   :target: https://suod.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
+
 .. image:: https://img.shields.io/github/stars/yzhao062/suod.svg
    :target: https://github.com/yzhao062/suod/stargazers
    :alt: GitHub stars

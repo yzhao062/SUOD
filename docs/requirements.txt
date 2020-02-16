@@ -1,0 +1,7 @@
+joblib
+matplotlib
+numpy>=1.13
+scipy>=0.19.1
+scikit_learn>=0.19.1
+pyod>=0.7.5
+sphinxcontrib-bibtex

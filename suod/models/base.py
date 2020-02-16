@@ -45,8 +45,7 @@ else:
 
 
 class SUOD(object):
-    """Towards (Scalable Unsupervised Outlier Detection). SUOD
-    (Toward Scalable Unsupervised Outlier Detection) is an acceleration
+    """SUOD (Scalable Unsupervised Outlier Detection) is an acceleration
     framework for large scale unsupervised outlier detector training and
     prediction.
 

@@ -5,9 +5,7 @@ from pyod.models.pca import PCA
 from pyod.models.knn import KNN
 from pyod.models.hbos import HBOS
 from pyod.models.abod import ABOD
-from pyod.models.lscp import LSCP
 from pyod.models.mcd import MCD
-from pyod.models.lmdd import LMDD
 
 # suppress warnings
 import warnings
@@ -16,6 +14,23 @@ warnings.filterwarnings("ignore")
 
 
 def _unfold_parallel(lists, n_jobs):
+    """Internal function to unfold the results returned from the parallization
+
+    Parameters
+    ----------
+    lists : list
+        The results from the parallelization operations.
+
+    n_jobs : optional (default=1)
+        The number of jobs to run in parallel for both `fit` and
+        `predict`. If -1, then the number of jobs is set to the
+        number of cores.
+
+    Returns
+    -------
+    result_list : list
+        The list of unfolded result.
+    """
     full_list = []
     for i in range(n_jobs):
         full_list.extend(lists[i])

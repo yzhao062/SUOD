@@ -2,7 +2,7 @@
 """Base class for SUOD
 """
 # Author: Yue Zhao <zhaoy@cmu.edu>
-# License: BSD 2 clause
+# License: MIT
 
 
 import os

@@ -1,3 +1,5 @@
+# Author: Yue Zhao <zhaoy@cmu.edu>
+# License: MIT
 from sklearn.base import clone
 
 import numpy as np
@@ -52,14 +54,14 @@ def balanced_scheduling(time_cost_pred, n_estimators, n_jobs):
             starts_orig.append(i)
             index_track += 1
     starts_orig.append(len(ranks))
-    
+
     starts = starts_orig
 
     # # offset for the last worker's load
     # starts = [0]
     # for k in range(1, n_jobs+1):
     #     starts.append(starts_orig[k]-np.random.randint(low=1, high=k+1))
-        
+
     # print(starts)
     # starts[-1] = n_estimators
     # print(starts)

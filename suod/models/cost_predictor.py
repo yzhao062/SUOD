@@ -1,5 +1,5 @@
 # Author: Yue Zhao <zhaoy@cmu.edu>
-# License: BSD 2 clause
+# License: MIT
 import sys
 import os
 

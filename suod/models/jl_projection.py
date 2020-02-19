@@ -1,6 +1,9 @@
-"""Part of the code is adapted from https://github.com/PTAug/jlt-python
-
+# -*- coding: utf-8 -*-
+"""Johnson–Lindenstrauss process. Part of the code is adapted from
+https://github.com/PTAug/jlt-python
 """
+# Author: Yue Zhao <zhaoy@cmu.edu>
+# License: MIT
 
 import numpy as np
 from sklearn.utils import check_array
@@ -8,7 +11,8 @@ import math
 
 
 def jl_fit_transform(X, objective_dim, method="basic"):
-    """Reduce the dimension of X by Johnson–Lindenstrauss process.
+    """Fit and transform the input data by Johnson–Lindenstrauss process.
+    See :cite:`johnson1984extensions` for details.
 
     Parameters
     ----------
@@ -34,8 +38,11 @@ def jl_fit_transform(X, objective_dim, method="basic"):
 
     Returns
     -------
-    X_transformed :
-    jlt_transformer :
+    X_transformed : numpy array of shape (n_samples, objective_dim)
+        The dataset after the JL projection.
+
+    jlt_transformer : object
+        Transformer instance.
 
     """
     if method.lower() == "basic":
@@ -61,14 +68,22 @@ def jl_fit_transform(X, objective_dim, method="basic"):
         NotImplementedError('Wrong transformation type')
 
     jlt_transformer = jlt_transformer.T
-    #    trans_dataset = []
-    #    [trans_dataset.append(np.dot(jlt, np.transpose(X[i])))
-    #     for i in range(len(X))]
 
     return np.dot(X, jlt_transformer), jlt_transformer
 
 
 def jl_transform(X, jl_transformer):
+    """Use the fitted transformer to conduct JL projection.
+
+    Parameters
+    ----------
+    X
+    jl_transformer
+
+    Returns
+    -------
+
+    """
     X = check_array(X)
     jl_transformer = check_array(jl_transformer)
 

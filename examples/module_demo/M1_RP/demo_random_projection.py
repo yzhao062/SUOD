@@ -1,5 +1,12 @@
 # %%
 import os
+import sys
+
+# temporary solution for relative imports in case combo is not installed
+# if combo is installed, no need to use the following line
+sys.path.append(
+    os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
+
 import time
 import numpy as np
 import scipy as sp
@@ -23,7 +30,7 @@ from pyod.utils.utility import generate_bagging_indices
 from sklearn.metrics import roc_auc_score
 
 from sklearn.random_projection import johnson_lindenstrauss_min_dim
-from jlt_core import jl_transform
+from suod.models.jl_projection import jl_fit_transform
 
 import warnings
 
@@ -113,41 +120,41 @@ for mat_file in mat_file_list:
         original_roc.append(roc_auc_score(y, y_train_scores))
         original_prn.append(precision_n_scores(y, y_train_scores))
 
-        X_transformer = jl_transform(X, dim_new, "basic")
+        X_transformed, _ = jl_fit_transform(X, dim_new, "basic")
         start = time.time()
-        clf.fit(X_transformer)
+        clf.fit(X_transformed)
         y_train_scores = clf.decision_scores_
         basic_time.append(time.time() - start)
         basic_roc.append(roc_auc_score(y, y_train_scores))
         basic_prn.append(precision_n_scores(y, y_train_scores))
 
-        X_transformer = jl_transform(X, dim_new, "discrete")
+        X_transformed, _ = jl_fit_transform(X, dim_new, "discrete")
         start = time.time()
-        clf.fit(X_transformer)
+        clf.fit(X_transformed)
         y_train_scores = clf.decision_scores_
         discrete_time.append(time.time() - start)
         discrete_roc.append(roc_auc_score(y, y_train_scores))
         discrete_prn.append(precision_n_scores(y, y_train_scores))
 
-        X_transformer = jl_transform(X, dim_new, "circulant")
+        X_transformed, _ = jl_fit_transform(X, dim_new, "circulant")
         start = time.time()
-        clf.fit(X_transformer)
+        clf.fit(X_transformed)
         y_train_scores = clf.decision_scores_
         circulant_time.append(time.time() - start)
         circulant_roc.append(roc_auc_score(y, y_train_scores))
         circulant_prn.append(precision_n_scores(y, y_train_scores))
 
-        X_transformer = jl_transform(X, dim_new, "toeplitz")
+        X_transformed, _ = jl_fit_transform(X, dim_new, "toeplitz")
         start = time.time()
-        clf.fit(X_transformer)
+        clf.fit(X_transformed)
         y_train_scores = clf.decision_scores_
         toeplitz_time.append(time.time() - start)
         toeplitz_roc.append(roc_auc_score(y, y_train_scores))
         toeplitz_prn.append(precision_n_scores(y, y_train_scores))
 
-        X_transformer = PCA_sklearn(n_components=dim_new).fit_transform(X)
+        X_transformed = PCA_sklearn(n_components=dim_new).fit_transform(X)
         start = time.time()
-        clf.fit(X_transformer)
+        clf.fit(X_transformed)
         y_train_scores = clf.decision_scores_
         pca_time.append(time.time() - start)
         pca_roc.append(roc_auc_score(y, y_train_scores))
@@ -160,9 +167,9 @@ for mat_file in mat_file_list:
                                                      min_features=dim_new,
                                                      max_features=dim_new + 1)
         assert (dim_new == len(selected_features))
-        X_transformer = X[:, selected_features]
+        X_transformed = X[:, selected_features]
         start = time.time()
-        clf.fit(X_transformer)
+        clf.fit(X_transformed)
         y_train_scores = clf.decision_scores_
         rp_time.append(time.time() - start)
         rp_roc.append(roc_auc_score(y, y_train_scores))

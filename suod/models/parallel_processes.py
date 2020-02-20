@@ -26,20 +26,39 @@ def balanced_scheduling(time_cost_pred, n_estimators, n_jobs):
 
     Parameters
     ----------
-    time_cost_pred
-    n_estimators
-    n_jobs
+    time_cost_pred : list
+        The list of time cost by the cost predictor. The length is equal to
+        the number of base detectors.
+
+    n_estimators : int
+        The number of base estimators.
+
+    n_jobs : optional (default=1)
+        The number of jobs to run in parallel for both `fit` and
+        `predict`. If -1, then the number of jobs is set to the
+        number of cores.
 
     Returns
     -------
+    n_estimators_list : list
+        The number of estimators for each worker
 
+    starts : list
+        The actual index of base detectors to be scheduled. For instance,
+        starts[k, k+1] base detectors will be assigned to worker k.
+
+    n_jobs :
+        The actual usable number of jobs to run in parallel.
     """
+    # get the number of usable workers
     n_jobs = min(effective_n_jobs(n_jobs), n_estimators)
-    # Conduct Balanced Task Scheduling
+
+    # conduct Balanced Task Scheduling
     n_estimators_list = []  # track the number of estimators for each worker
     ranks = rankdata(time_cost_pred)
     ##########################################
     # #todo: the fastest is at most 2 times costly than the slowest
+    # enable a parameter for the rank strength
     ranks = 1 + ranks / n_estimators
     ##########################################
     rank_sum = np.sum(ranks)

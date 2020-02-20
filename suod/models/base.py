@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Base class for SUOD
+"""Base class and functions of SUOD (Scalable Unsupervised Outlier Detection)
 """
 # Author: Yue Zhao <zhaoy@cmu.edu>
 # License: MIT
@@ -47,7 +47,7 @@ else:
 class SUOD(object):
     """SUOD (Scalable Unsupervised Outlier Detection) is an acceleration
     framework for large scale unsupervised outlier detector training and
-    prediction.
+    prediction. The corresponding paper is under review in KDD 2020.
 
     Parameters
     ----------
@@ -65,11 +65,34 @@ class SUOD(object):
         `predict`. If -1, then the number of jobs is set to the
         number of cores.
 
-    rp_clf_list
-    rp_ng_clf_list
-    rp_flag_global
-    max_features
-    rp_method
+    rp_clf_list : list, optional (default=None)
+        The list of outlier detection models to use random projection. The
+        detector name should be consistent with PyOD.
+
+    rp_ng_clf_list : list, optional (default=None)
+        The list of outlier detection models NOT to use random projection. The
+        detector name should be consistent with PyOD.
+
+    rp_flag_global : bool, optional (default=True)
+        If set to False, random projection is turned off for all base models.
+        
+    target_dim_frac : float in (0., 1), optional (default=0.5)
+        The target compression ratio.
+
+    jl_method : string, optional (default = 'basic')
+        The JL projection method:
+
+        - "basic": each component of the transformation matrix is taken at
+          random in N(0,1).
+        - "discrete", each component of the transformation matrix is taken at
+          random in {-1,1}.
+        - "circulant": the first row of the transformation matrix is taken at
+          random in N(0,1), and each row is obtained from the previous one
+          by a one-left shift.
+        - "toeplitz": the first row and column of the transformation matrix
+          is taken at random in N(0,1), and each diagonal has a constant value
+          taken from these first vector.
+
     bps_flag
     approx_clf_list
     approx_ng_clf_list
@@ -91,7 +114,7 @@ class SUOD(object):
 
     def __init__(self, base_estimators, contamination=0.1, n_jobs=None,
                  rp_clf_list=None, rp_ng_clf_list=None, rp_flag_global=True,
-                 max_features=0.5, rp_method='basic', bps_flag=False,
+                 target_dim_frac=0.5, jl_method='basic', bps_flag=False,
                  approx_clf_list=None, approx_ng_clf_list=None,
                  approx_flag_global=True, approx_clf=None,
                  cost_forecast_loc_fit=None, cost_forecast_loc_pred=None,
@@ -103,8 +126,8 @@ class SUOD(object):
         self.base_estimators = base_estimators
         self.n_estimators = len(base_estimators)
         self.rp_flag_global = rp_flag_global
-        self.max_features = max_features
-        self.rp_method = rp_method
+        self.target_dim_frac = target_dim_frac
+        self.jl_method = jl_method
         self.bps_flag = bps_flag
         self.verbose = verbose
         self.approx_flag_global = approx_flag_global
@@ -159,9 +182,10 @@ class SUOD(object):
         else:
             self.rp_ng_clf_list = rp_ng_clf_list
 
-        # Validate max_features
-        check_parameter(self.max_features, low=0, high=1, include_left=False,
-                        include_right=True, param_name='max_features')
+        # Validate target_dim_frac
+        check_parameter(self.target_dim_frac, low=0, high=1,
+                        include_left=False,
+                        include_right=True, param_name='target_dim_frac')
 
         # validate model approximation list
         if approx_clf_list is None:
@@ -211,11 +235,11 @@ class SUOD(object):
         X = check_array(X)
         n_samples, n_features = X.shape[0], X.shape[1]
 
-        # Validate max_features for random projection
-        if isinstance(self.max_features, (numbers.Integral, np.integer)):
-            self.max_features_ = self.max_features
+        # Validate target_dim_frac for random projection
+        if isinstance(self.target_dim_frac, (numbers.Integral, np.integer)):
+            self.target_dim_frac_ = self.target_dim_frac
         else:  # float
-            self.max_features_ = int(self.max_features * n_features)
+            self.target_dim_frac_ = int(self.target_dim_frac * n_features)
 
         # build flags for random projection
         self.rp_flags_, _ = build_codes(
@@ -253,8 +277,8 @@ class SUOD(object):
                 X,
                 self.n_estimators,
                 self.rp_flags[starts[i]:starts[i + 1]],
-                self.max_features_,
-                self.rp_method,
+                self.target_dim_frac_,
+                self.jl_method,
                 verbose=self.verbose)
             for i in range(n_jobs))
 

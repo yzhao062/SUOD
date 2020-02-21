@@ -11,6 +11,7 @@ from sklearn.utils.validation import check_is_fitted
 from pyod.utils.utility import score_to_label
 
 from .jl_projection import jl_fit_transform, jl_transform
+from ..utils.utility import raw_score_to_proba
 
 
 def indices_to_one_hot(data, nb_classes):
@@ -210,6 +211,36 @@ def _parallel_decision_function(n_estimators, clfs, approximators, X,
             predicted_scores = estimator.decision_function(X_scaled)
 
         pred.append(predicted_scores)
+
+    return pred
+
+
+def _parallel_predict_proba(n_estimators, clfs, approximators, X,
+                            total_n_estimators, rp_transformers,
+                            approx_flags, verbose):
+    X = check_array(X)
+
+    pred = []
+    for i in range(n_estimators):
+        estimator = clfs[i]
+        if verbose > 1:
+            print("predicting with estimator %d of %d for this parallel run "
+                  "(total %d)..." % (i + 1, n_estimators, total_n_estimators))
+
+        # project matrix
+        X_scaled = jl_transform(X, rp_transformers[i])
+
+        # turn approximator scores to labels by outlier
+        if approx_flags[i] == 1:
+            raw_scores = approximators[i].predict(X_scaled)
+            predicted_scores = raw_score_to_proba(estimator.decision_scores_,
+                                                  raw_scores)
+
+        else:
+            predicted_scores = estimator.predict_proba(X_scaled)
+
+        pred.append(predicted_scores[:, 1])
+        # pred.append(predicted_scores)
 
     return pred
 

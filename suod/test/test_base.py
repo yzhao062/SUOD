@@ -87,3 +87,8 @@ class TestBASE(unittest.TestCase):
         self.model.fit(self.X_train)
         self.model.approximate(self.X_train)
         self.model.decision_function(self.X_test)
+
+    def test_predict_proba(self):
+        self.model.fit(self.X_train)
+        self.model.approximate(self.X_train)
+        self.model.predict_proba(self.X_test)

@@ -26,6 +26,7 @@ from suod.models.parallel_processes import cost_forecast_meta
 from suod.models.parallel_processes import balanced_scheduling
 from suod.models.parallel_processes import _parallel_fit
 from suod.models.parallel_processes import _parallel_predict
+from suod.models.parallel_processes import _parallel_predict_proba
 from suod.models.parallel_processes import _parallel_decision_function
 from suod.models.parallel_processes import _partition_estimators
 from suod.models.parallel_processes import _parallel_approx_estimators
@@ -397,8 +398,9 @@ class SUOD(object):
                 self.n_estimators, self.n_jobs)
 
         # fit the base models
-        print('Parallel label prediction...')
-        start = time.time()
+        if self.verbose:
+            print('Parallel label prediction...')
+            start = time.time()
 
         # TODO: code cleanup. There is an existing bug for joblib on Windows:
         # https://github.com/joblib/joblib/issues/806
@@ -418,8 +420,9 @@ class SUOD(object):
                 verbose=True)
             for i in range(n_jobs))
 
-        print('Parallel Label Predicting without Approximators Total Time:',
-              time.time() - start)
+        if self.verbose:
+            print('Parallel Label Predicting without Approximators '
+                  'Total Time:', time.time() - start)
 
         # unfold and generate the label matrix
         predicted_labels = np.zeros([n_samples, self.n_estimators])
@@ -477,6 +480,86 @@ class SUOD(object):
         all_results_scores = Parallel(n_jobs=n_jobs, max_nbytes=None,
                                       verbose=True)(
             delayed(_parallel_decision_function)(
+                n_estimators_list[i],
+                self.base_estimators[starts[i]:starts[i + 1]],
+                self.approximators[starts[i]:starts[i + 1]],
+                X,
+                self.n_estimators,
+                # self.rp_flags[starts[i]:starts[i + 1]],
+                self.jl_transformers_[starts[i]:starts[i + 1]],
+                self.approx_flags[starts[i]:starts[i + 1]],
+                verbose=True)
+            for i in range(n_jobs))
+
+        # fit the base models
+        if self.verbose:
+            print('Parallel Score Prediction without Approximators '
+                  'Total Time:', time.time() - start)
+
+        # unfold and generate the label matrix
+        predicted_scores = np.zeros([n_samples, self.n_estimators])
+        for i in range(n_jobs):
+            predicted_scores[:, starts[i]:starts[i + 1]] = np.asarray(
+                all_results_scores[i]).T
+
+        return predicted_scores
+
+    def predict_proba(self, X):
+        """Predict the probability of a sample being outlier. Two approaches
+        are possible:
+
+        1. simply use Min-max conversion to linearly transform the outlier
+           scores into the range of [0,1]. The model must be
+           fitted first.
+        2. use unifying scores, see :cite:`kriegel2011interpreting`.
+
+        Parameters
+        ----------
+        X : numpy array of shape (n_samples, n_features)
+            The input samples.
+
+        method : str, optional (default='linear')
+            probability conversion method. It must be one of
+            'linear' or 'unify'.
+
+        Returns
+        -------
+        outlier_probability : numpy array of shape (n_samples,)
+            For each observation, tells whether or not
+            it should be considered as an outlier according to the
+            fitted model. Return the outlier probability, ranging
+            in [0,1].
+        """
+        X = check_array(X)
+        n_samples, n_features = X.shape[0], X.shape[1]
+
+        # decide whether bps is needed
+        # it is turned off
+        if self.bps_flag:
+            # load the pre-trained cost predictor to forecast the train cost
+            cost_predictor = joblib.load(self.cost_forecast_loc_pred_)
+
+            time_cost_pred = cost_forecast_meta(cost_predictor, X,
+                                                self.base_estimator_names)
+
+            n_estimators_list, starts, n_jobs = balanced_scheduling(
+                time_cost_pred, self.n_estimators, self.n_jobs)
+        else:
+            # use simple equal split by sklearn
+            n_estimators_list, starts, n_jobs = _partition_estimators(
+                self.n_estimators, self.n_jobs)
+
+        # fit the base models
+        if self.verbose:
+            print('Parallel score prediction...')
+            start = time.time()
+
+        # TODO: code cleanup. There is an existing bug for joblib on Windows:
+        # https://github.com/joblib/joblib/issues/806
+        # max_nbytes can be dropped on other OS
+        all_results_scores = Parallel(n_jobs=n_jobs, max_nbytes=None,
+                                      verbose=True)(
+            delayed(_parallel_predict_proba)(
                 n_estimators_list[i],
                 self.base_estimators[starts[i]:starts[i + 1]],
                 self.approximators[starts[i]:starts[i + 1]],

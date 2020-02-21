@@ -111,12 +111,16 @@ if __name__ == "__main__":
     model.approximate(X_train)  # conduct model approximation if it is enabled
     predicted_labels = model.predict(X_test)  # predict labels
     predicted_scores = model.decision_function(X_test)  # predict scores
+    predicted_probs = model.predict_proba(X_test)  # predict scores
 
     ###########################################################################
     # compared with other approaches
     evaluate_print('majority vote', y_test, majority_vote(predicted_labels))
     evaluate_print('average', y_test, average(predicted_scores))
     evaluate_print('maximization', y_test, maximization(predicted_scores))
+
+    evaluate_print('average', y_test, average(predicted_probs))
+    evaluate_print('maximization', y_test, maximization(predicted_probs))
 
     clf = LOF()
     clf.fit(X_train)

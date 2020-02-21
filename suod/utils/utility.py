@@ -1,4 +1,7 @@
 import numpy as np
+from scipy.special import erf
+from sklearn.preprocessing import MinMaxScaler
+
 from pyod.models.iforest import IForest
 from pyod.models.lof import LOF
 from pyod.models.ocsvm import OCSVM
@@ -11,7 +14,19 @@ from pyod.models.mcd import MCD
 # suppress warnings
 import warnings
 
-from suod.models.parallel_processes import clf_idx_mapping
+clf_idx_mapping = {
+    'ABOD': 1,
+    'CBLOF': 2,
+    'FeatureBagging': 3,
+    'HBOS': 4,
+    'IForest': 5,
+    'KNN': 6,
+    'LOF': 7,
+    'MCD': 8,
+    'OCSVM': 9,
+    'PCA': 10,
+    'UNK': 11
+}
 
 warnings.filterwarnings("ignore")
 
@@ -99,6 +114,28 @@ def build_codes(base_estimators, clf_list, ng_clf_list, flag_global):
         flags = np.zeros([n_estimators, 1], dtype=int)
 
     return flags, base_estimator_names
+
+
+def raw_score_to_proba(decision_scores, test_scores, method='linear'):
+    probs = np.zeros([test_scores.shape[0], 2])
+    if method == 'linear':
+        scaler = MinMaxScaler().fit(decision_scores.reshape(-1, 1))
+        probs[:, 1] = scaler.transform(
+            test_scores.reshape(-1, 1)).ravel().clip(0, 1)
+        probs[:, 0] = 1 - probs[:, 1]
+        return probs
+
+    elif method == 'unify':
+        # turn output into probability
+        pre_erf_score = (test_scores - np.mean(decision_scores, axis=0)) / (
+                np.std(decision_scores) * np.sqrt(2))
+        erf_score = erf(pre_erf_score)
+        probs[:, 1] = erf_score.clip(0, 1).ravel()
+        probs[:, 0] = 1 - probs[:, 1]
+        return probs
+    else:
+        raise ValueError(
+            method, 'is not a valid probability conversion method')
 
 
 def get_estimators(contamination):

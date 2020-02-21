@@ -93,13 +93,22 @@ class SUOD(object):
           is taken at random in N(0,1), and each diagonal has a constant value
           taken from these first vector.
 
-    bps_flag
-    approx_clf_list
-    approx_ng_clf_list
+    bps_flag : bool, optional (default=True)
+        If set to False, balanced parallel scheduling is turned off.
 
-    approx_flag_global : bool
+    approx_clf_list : list, optional (default=None)
+        The list of outlier detection models to use pseudo-supervised
+        approximation. The detector name should be consistent with PyOD.
+
+    approx_ng_clf_list : list, optional (default=None)
+        The list of outlier detection models NOT to use pseudo-supervised
+        approximation. The detector name should be consistent with PyOD.
+
+    approx_flag_global : bool, optional (default=True)
+        If set to False, pseudo-supervised approximation is turned off.
 
     approx_clf : object, optional (default: sklearn RandomForestRegressor)
+        The supervised model used to approximate unsupervised models.
 
     cost_forecast_loc_fit : str, optional
         The location of the pretrained cost prediction forecast for training.
@@ -109,12 +118,11 @@ class SUOD(object):
 
     verbose : int, optional (default=0)
         Controls the verbosity of the building process.
-
     """
 
     def __init__(self, base_estimators, contamination=0.1, n_jobs=None,
                  rp_clf_list=None, rp_ng_clf_list=None, rp_flag_global=True,
-                 target_dim_frac=0.5, jl_method='basic', bps_flag=False,
+                 target_dim_frac=0.5, jl_method='basic', bps_flag=True,
                  approx_clf_list=None, approx_ng_clf_list=None,
                  approx_flag_global=True, approx_clf=None,
                  cost_forecast_loc_fit=None, cost_forecast_loc_pred=None,
@@ -294,6 +302,19 @@ class SUOD(object):
         return self
 
     def approximate(self, X):
+        """Use the supervised regressor (random forest by default) to
+        approximate unsupervised fitted outlier detectors.
+
+        Parameters
+        ----------
+        X : numpy array of shape (n_samples, n_features)
+            The input samples. The same feature space of the unsupervised
+            outlier detector will be used.
+
+        Returns
+        -------
+        self
+        """
 
         # todo: X may be optional
         # todo: allow to use a list of scores for approximation, instead of

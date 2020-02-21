@@ -22,14 +22,14 @@ from pyod.models.sklearn_base import _pprint
 from pyod.utils.utility import _get_sklearn_version
 from pyod.utils.utility import check_parameter
 
-from suod.models.parallel_processes import cost_forecast_meta, clf_idx_mapping
+from suod.models.parallel_processes import cost_forecast_meta
 from suod.models.parallel_processes import balanced_scheduling
 from suod.models.parallel_processes import _parallel_fit
 from suod.models.parallel_processes import _parallel_predict
 from suod.models.parallel_processes import _parallel_decision_function
 from suod.models.parallel_processes import _partition_estimators
 from suod.models.parallel_processes import _parallel_approx_estimators
-from ..utils.utility import _unfold_parallel
+from ..utils.utility import _unfold_parallel, build_codes
 
 import warnings
 from collections import defaultdict
@@ -149,17 +149,32 @@ class SUOD(object):
 
         # build flags for random projection
         self.rp_flags, self.base_estimator_names = build_codes(
-            self.n_estimators,
-            self.base_estimators,
-            self.rp_clf_list,
-            self.rp_ng_clf_list,
+            self.base_estimators, self.rp_clf_list, self.rp_ng_clf_list,
             self.rp_flag_global)
 
     def _parameter_validation(self, contamination, n_jobs, rp_clf_list,
                               rp_ng_clf_list, approx_clf_list,
                               approx_ng_clf_list, approx_clf,
-                              cost_forecast_loc_fit,
-                              cost_forecast_loc_pred):
+                              cost_forecast_loc_fit, cost_forecast_loc_pred):
+        """Internal function to valid the initial parameters
+
+        Parameters
+        ----------
+        contamination
+        n_jobs
+        rp_clf_list
+        rp_ng_clf_list
+        approx_clf_list
+        approx_ng_clf_list
+        approx_clf
+        cost_forecast_loc_fit
+        cost_forecast_loc_pred
+
+        Returns
+        -------
+        self : object
+            Post-check estimator.
+        """
 
         if not (0. < contamination <= 0.5):
             raise ValueError("contamination must be in (0, 0.5], "
@@ -225,8 +240,8 @@ class SUOD(object):
 
         return self
 
-    def fit(self, X, y=None):
-        """Fit estimator. y is optional for unsupervised methods.
+    def fit(self, X):
+        """Fit estimator.
 
         Parameters
         ----------
@@ -238,7 +253,8 @@ class SUOD(object):
 
         Returns
         -------
-        self
+        self : object
+            Fitted estimator.
         """
         X = check_array(X)
         n_samples, n_features = X.shape[0], X.shape[1]
@@ -250,9 +266,9 @@ class SUOD(object):
             self.target_dim_frac_ = int(self.target_dim_frac * n_features)
 
         # build flags for random projection
-        self.rp_flags_, _ = build_codes(
-            self.n_estimators, self.base_estimators, self.rp_clf_list,
-            self.rp_ng_clf_list, self.rp_flag_global)
+        self.rp_flags_, _ = build_codes(self.base_estimators, self.rp_clf_list,
+                                        self.rp_ng_clf_list,
+                                        self.rp_flag_global)
 
         # decide whether bps is needed
         # it is turned off
@@ -313,15 +329,15 @@ class SUOD(object):
 
         Returns
         -------
-        self
+        self : object
+            The estimator after with approximation.
         """
 
         # todo: X may be optional
         # todo: allow to use a list of scores for approximation, instead of
         # todo: decision_scores
 
-        self.approx_flags, _ = build_codes(self.n_estimators,
-                                           self.base_estimators,
+        self.approx_flags, _ = build_codes(self.base_estimators,
                                            self.approx_clf_list,
                                            self.approx_ng_clf_list,
                                            self.approx_flag_global)
@@ -356,8 +372,10 @@ class SUOD(object):
 
         Returns
         -------
-        labels : numpy array of shape (n_samples,)
-            Class labels for each data sample.
+        outlier_labels : numpy array of shape (n_samples, n_estimators)
+            For each observation, tells whether or not
+            it should be considered as an outlier according to the
+            fitted model. 0 stands for inliers and 1 for outliers.
         """
         X = check_array(X)
         n_samples, n_features = X.shape[0], X.shape[1]
@@ -620,55 +638,3 @@ class SUOD(object):
         class_name = self.__class__.__name__
         return '%s(%s)' % (class_name, _pprint(self.get_params(deep=False),
                                                offset=len(class_name), ),)
-
-
-def build_codes(n_estimators, base_estimators, clf_list, ng_clf_list,
-                flag_global):
-    """Core function for building codes for deciding whether enable random
-    projection and supervised approximation.
-
-    Parameters
-    ----------
-    n_estimators
-    base_estimators
-    clf_list
-    ng_clf_list
-    flag_global
-
-    Returns
-    -------
-
-    """
-    base_estimator_names = []
-    flags = np.zeros([n_estimators, 1], dtype=int)
-
-    for i in range(n_estimators):
-
-        try:
-            clf_name = type(base_estimators[i]).__name__
-
-        except TypeError:
-            print('Unknown detection algorithm.')
-            clf_name = 'UNK'
-
-        if clf_name not in list(clf_idx_mapping):
-            # print(clf_name)
-            clf_name = 'UNK'
-        # build the estimator list
-        base_estimator_names.append(clf_name)
-
-        # check whether the projection is needed
-        if clf_name in clf_list:
-            flags[i] = 1
-        elif clf_name in ng_clf_list:
-            continue
-        else:
-            warnings.warn(
-                "{clf_name} does not have a predefined code. "
-                "Code sets to 0.".format(clf_name=clf_name))
-
-    if not flag_global:
-        # revert back
-        flags = np.zeros([n_estimators, 1], dtype=int)
-
-    return flags, base_estimator_names

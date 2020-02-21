@@ -24,14 +24,13 @@ from pyod.models.lscp import LSCP
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
 
-from suod.models.base import build_codes
 from suod.models.parallel_processes import cost_forecast_meta
 from suod.models.parallel_processes import _parallel_fit
 from suod.models.parallel_processes import _parallel_predict
 from suod.models.parallel_processes import _partition_estimators
 from suod.models.parallel_processes import _parallel_approx_estimators
 from suod.models.parallel_processes import balanced_scheduling
-from suod.utils.utility import _unfold_parallel
+from suod.utils.utility import _unfold_parallel, build_codes
 
 # suppress warnings
 import warnings
@@ -126,9 +125,8 @@ objective_dim = 6
 rp_method = 'discrete'
 
 # build flags for random projection
-rp_flags, base_estimator_names = build_codes(n_estimators, base_estimators,
-                                             rp_clf_list, rp_ng_clf_list,
-                                             rp_flag_global)
+rp_flags, base_estimator_names = build_codes(base_estimators, rp_clf_list,
+                                             rp_ng_clf_list, rp_flag_global)
 
 # load the pre-trained cost predictor to forecast the train cost
 clf_train = joblib.load(
@@ -179,7 +177,7 @@ approx_flag_global = True
 
 approx_clf = RandomForestRegressor(n_estimators=100)
 
-approx_flags, base_estimator_names = build_codes(n_estimators, base_estimators,
+approx_flags, base_estimator_names = build_codes(base_estimators,
                                                  approx_clf_list,
                                                  approx_ng_clf_list,
                                                  approx_flag_global)

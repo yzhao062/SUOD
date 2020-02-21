@@ -1,3 +1,4 @@
+import numpy as np
 from pyod.models.iforest import IForest
 from pyod.models.lof import LOF
 from pyod.models.ocsvm import OCSVM
@@ -9,6 +10,8 @@ from pyod.models.mcd import MCD
 
 # suppress warnings
 import warnings
+
+from suod.models.parallel_processes import clf_idx_mapping
 
 warnings.filterwarnings("ignore")
 
@@ -37,7 +40,83 @@ def _unfold_parallel(lists, n_jobs):
     return full_list
 
 
+def build_codes(base_estimators, clf_list, ng_clf_list, flag_global):
+    """Core function for building codes for deciding whether enable random
+    projection and supervised approximation.
+
+    Parameters
+    ----------
+    base_estimators: list, length must be greater than 1
+        A list of base estimators. Certain methods must be present, e.g.,
+        `fit` and `predict`.
+
+    clf_list : list
+        The list of outlier detection models to use a certain function. The
+        detector name should be consistent with PyOD.
+
+    ng_clf_list : list
+        The list of outlier detection models to NOT use a certain function. The
+        detector name should be consistent with PyOD.
+
+    flag_global : bool
+        The global flag to override the code build.
+
+    Returns
+    -------
+
+    """
+    n_estimators = len(base_estimators)
+    base_estimator_names = []
+    flags = np.zeros([n_estimators, 1], dtype=int)
+
+    for i in range(n_estimators):
+
+        try:
+            clf_name = type(base_estimators[i]).__name__
+
+        except TypeError:
+            print('Unknown detection algorithm.')
+            clf_name = 'UNK'
+
+        if clf_name not in list(clf_idx_mapping):
+            # print(clf_name)
+            clf_name = 'UNK'
+        # build the estimator list
+        base_estimator_names.append(clf_name)
+
+        # check whether the projection is needed
+        if clf_name in clf_list:
+            flags[i] = 1
+        elif clf_name in ng_clf_list:
+            continue
+        else:
+            warnings.warn(
+                "{clf_name} does not have a predefined code. "
+                "Code sets to 0.".format(clf_name=clf_name))
+
+    if not flag_global:
+        # revert back
+        flags = np.zeros([n_estimators, 1], dtype=int)
+
+    return flags, base_estimator_names
+
+
 def get_estimators(contamination):
+    """Internal method to create a list of 600 random base outlier detectors.
+
+    Parameters
+    ----------
+    contamination : float in (0., 0.5), optional (default=0.1)
+        The amount of contamination of the data set,
+        i.e. the proportion of outliers in the data set. Used when fitting to
+        define the threshold on the decision function.
+
+    Returns
+    -------
+    base_detectors : list
+        A list of initialized random base outlier detectors.
+
+    """
     BASE_ESTIMATORS = [
         LOF(n_neighbors=5, contamination=contamination),
         LOF(n_neighbors=10, contamination=contamination),

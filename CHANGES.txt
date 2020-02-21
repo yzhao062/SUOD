@@ -4,3 +4,4 @@ v<0.0.2>, <01/05/2020> -- Refactor code for better import.
 v<0.0.2>, <01/05/2020> -- Improve code coverage.
 v<0.0.2>, <01/11/2020> -- Full code refactor.
 v<0.0.3>, <02/15/2020> -- Add documentation.
+v<0.0.3>, <02/21/2020> -- Major code refactoring for stable release.

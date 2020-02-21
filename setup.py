@@ -26,7 +26,7 @@ with open(path.join(this_directory, 'requirements.txt'),
 setup(
     name='suod',
     version=__version__,
-    description='An Acceleration System for Large Scale Unsupervised Anomaly Detection',
+    description='A Scalable Framework for Unsupervised Outlier Detection (Anomaly Detection)',
     long_description=readme(),
     long_description_content_type='text/x-rst',
     author='Yue Zhao',

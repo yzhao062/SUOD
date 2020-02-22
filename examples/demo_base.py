@@ -119,9 +119,6 @@ if __name__ == "__main__":
     evaluate_print('average', y_test, average(predicted_scores))
     evaluate_print('maximization', y_test, maximization(predicted_scores))
 
-    evaluate_print('average', y_test, average(predicted_probs))
-    evaluate_print('maximization', y_test, maximization(predicted_probs))
-
     clf = LOF()
     clf.fit(X_train)
     evaluate_print('LOF', y_test, clf.decision_function(X_test))
@@ -129,4 +126,3 @@ if __name__ == "__main__":
     clf = IForest()
     clf.fit(X_train)
     evaluate_print('IForest', y_test, clf.decision_function(X_test))
-

@@ -1,7 +1,7 @@
 Examples
 ========
 
-All three modules can be **executed separately** and the demo codes are in /example/module_demo/:
+All three modules can be **executed separately** and the demo codes are in /examples/module_examples/:
 
 * M1_RP: demo_random_projection.py
 * M2_PSA: demo_pseudo_sup_approximation.py
@@ -43,3 +43,4 @@ a simplified example. Run "demo_full.py" for a full example.
        model.approximate(X_train)  # conduct model approximation if it is enabled
        predicted_labels = model.predict(X_test)  # predict labels
        predicted_scores = model.decision_function(X_test)  # predict scores
+       predicted_probs = model.predict_proba(X_test)  # predict outlying probability

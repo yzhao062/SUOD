@@ -116,11 +116,11 @@ SUOD is featured for:
        model.approximate(X_train)  # conduct model approximation if it is enabled
        predicted_labels = model.predict(X_test)  # predict labels
        predicted_scores = model.decision_function(X_test)  # predict scores
-
+       predicted_probs = model.predict_proba(X_test)  # predict outlying probability
 
 ----
 
-A preliminary version (`accepted at AAAI-20 Security Workshop <http://aics.site/AICS2020/>`_) can be accessed `here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
+A preliminary version (`accepted at AAAI-20 Security Workshop <http://aics.site/AICS2020/>`_) can be accessed on `arxiv <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
 The extended version (under submission at `KDD 2020 (ADS track) <https://www.kdd.org/kdd2020/>`_) can be accessed `here <http://www.andrew.cmu.edu/user/yuezhao2/papers/20-kdd-insubmission-suod.pdf>`_.
 
 
@@ -141,19 +141,10 @@ If you use SUOD in a scientific publication, we would appreciate citations to th
 **Table of Contents**\ :
 
 
-* `Reproduction Instructions <#reproduction-instructions>`_
 * `Installation <#installation>`_
+* `API Cheatsheet & Reference <#api-cheatsheet--reference>`_
+* `Examples <#examples>`_
 
-------------
-
-Reproduction Instructions
-^^^^^^^^^^^^^^^^^^^^^^^^^
-
-All three modules can be **executed separately** and the demo codes are in /AAAI_Workshop/{M1_RP, M2_BPS, and M3_PSA}.
-For instance, you could navigate to /M1_RP/demo_random_projection.py. Demo codes all start with "demo_*.py".
-
-**The examples for the full framework** can be found under /examples folder; run "demo_base.py" for
-a simplified example. Run "demo_full.py" for a full example.
 
 ------------
 
@@ -197,6 +188,32 @@ To be consistent with the Python change and suod's dependent libraries, e.g., sc
 **SUOD only supports Python 3.5+** and we encourage you to use
 Python 3.5 or newer for the latest functions and bug fixes. More information can
 be found at `Moving to require Python 3 <https://python3statement.org/>`_.
+
+
+------------
+
+
+API Cheatsheet & Reference
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Full API Reference: (https://suod.readthedocs.io/en/latest/api.html).
+
+* **fit(X, y)**\ : Fit estimator. y is optional for unsupervised methods.
+* **approximate(X)**\ : Use supervised models to approximate unsupervised base detectors. Fit should be invoked first.
+* **predict(X)**\ : Predict on a particular sample once the estimator is fitted.
+* **predict_proba(X)**\ : Predict the probability of a sample belonging to each class once the estimator is fitted.
+
+
+Examples
+^^^^^^^^
+
+All three modules can be **executed separately** and the demo codes are in /examples/module_examples/{M1_RP, M2_BPS, and M3_PSA}.
+For instance, you could navigate to /M1_RP/demo_random_projection.py. Demo codes all start with "demo_*.py".
+
+**The examples for the full framework** can be found under /examples folder; run "demo_base.py" for
+a simplified example. Run "demo_full.py" for a full example.
+
+------------
 
 
 ----

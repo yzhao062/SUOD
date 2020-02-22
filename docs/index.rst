@@ -87,6 +87,63 @@ SUOD is featured for:
 
 ----
 
+**API Demo**\ :
+
+
+   .. code-block:: python
+
+
+       from suod.models.base import SUOD
+
+       # initialize a set of base outlier detectors to train and predict on
+       base_estimators = [
+           LOF(n_neighbors=5, contamination=contamination),
+           LOF(n_neighbors=15, contamination=contamination),
+           LOF(n_neighbors=25, contamination=contamination),
+           HBOS(contamination=contamination),
+           PCA(contamination=contamination),
+           OCSVM(contamination=contamination),
+           KNN(n_neighbors=5, contamination=contamination),
+           KNN(n_neighbors=15, contamination=contamination),
+           KNN(n_neighbors=25, contamination=contamination)]
+
+       # initialize a SUOD model with all features turned on
+       model = SUOD(base_estimators=base_estimators, n_jobs=6,  # number of workers
+                    rp_flag_global=True,  # global flag for random projection
+                    bps_flag=True,  # global flag for balanced parallel scheduling
+                    approx_flag_global=False,  # global flag for model approximation
+                    contamination=contamination)
+
+       model.fit(X_train)  # fit all models with X
+       model.approximate(X_train)  # conduct model approximation if it is enabled
+       predicted_labels = model.predict(X_test)  # predict labels
+       predicted_scores = model.decision_function(X_test)  # predict scores
+       predicted_probs = model.predict_proba(X_test)  # predict outlying probability
+
+----
+
+A preliminary version (`accepted at AAAI-20 Security Workshop <http://aics.site/AICS2020/>`_) can be accessed on `arxiv <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
+The extended version (under submission at `KDD 2020 (ADS track) <https://www.kdd.org/kdd2020/>`_) can be accessed `here <http://www.andrew.cmu.edu/user/yuezhao2/papers/20-kdd-insubmission-suod.pdf>`_.
+
+
+If you use SUOD in a scientific publication, we would appreciate citations to the following paper::
+
+    @inproceedings{zhao2020suod,
+      author  = {Zhao, Yue and Ding, Xueying and Yang, Jianing and Haoping Bai},
+      title   = {{SUOD}: Toward Scalable Unsupervised Outlier Detection},
+      journal = {Workshops at the Thirty-Fourth AAAI Conference on Artificial Intelligence},
+      year    = {2020}
+    }
+
+::
+
+    Yue Zhao, Xueying Ding, Jianing Yang, Haoping Bai, "Toward Scalable Unsupervised Outlier Detection". Workshops at the Thirty-Fourth AAAI Conference on Artificial Intelligence, 2020.
+
+
+
+
+----
+
 
 .. toctree::
    :maxdepth: 2

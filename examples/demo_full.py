@@ -138,7 +138,6 @@ if __name__ == "__main__":
             None,
             X_test,
             n_estimators,
-            # rp_flags[starts[i]:starts[i + 1]],
             jl_transformers,
             approx_flags[starts[i]:starts[i + 1]],
             contamination,
@@ -167,7 +166,6 @@ if __name__ == "__main__":
             None,
             X_test,
             n_estimators,
-            # rp_flags[starts[i]:starts[i + 1]],
             jl_transformers,
             approx_flags[starts[i]:starts[i + 1]],
             verbose=True)

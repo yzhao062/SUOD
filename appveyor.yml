@@ -25,7 +25,9 @@ install:
   - "%PYTHON%\\python.exe -m pip install --upgrade pip setuptools"
   - "%PYTHON%\\python.exe -m pip install wheel"
   - "%PYTHON%\\python.exe -m pip install pytest"
+  - "%PYTHON%\\python.exe -m pip install pandas"
   - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
+
 
 
 test_script:

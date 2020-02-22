@@ -1,3 +1,5 @@
+# Author: Yue Zhao <zhaoy@cmu.edu>
+# License: MIT
 import numpy as np
 from scipy.special import erf
 from sklearn.preprocessing import MinMaxScaler

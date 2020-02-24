@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+"""Cost predictor function for forecasting base model training and prediction
+cost.
+"""
 # Author: Yue Zhao <zhaoy@cmu.edu>
 # License: MIT
 import sys

@@ -25,12 +25,38 @@ if not sys.warnoptions:
 
 
 def indices_to_one_hot(data, nb_classes):
-    """Convert an iterable of indices to one-hot encoded labels."""
+    """Convert an iterable of indices to one-hot encoded labels.
+
+    Parameters
+    ----------
+    data : list
+        The raw data.
+
+    nb_classes : int
+        The number of targeted classes.
+
+    Returns
+    -------
+
+    """
     targets = np.array(data).reshape(-1)
     return np.eye(nb_classes)[targets]
 
 
 def build_cost_predictor(file_name, output_file, save_to_local=True):
+    """Build cost predictor from the scratch. In general, this does not need
+    to be used.
+
+    Parameters
+    ----------
+    file_name
+    output_file
+    save_to_local
+
+    Returns
+    -------
+
+    """
     # read in the data file
     # WS = pd.read_excel(os.path.join('saved_models', file_name),
     #                    sheet_name='sheet1').drop(columns=['File'])
@@ -91,6 +117,7 @@ def build_cost_predictor(file_name, output_file, save_to_local=True):
 
 
 if __name__ == "__main__":
+    # this should be only executed if the pre-trained model is missing.
     build_cost_predictor(
         file_name=os.path.join('saved_models', 'summary_train.txt'),
         output_file="bps_train.joblib",

@@ -65,6 +65,11 @@ Welcome to SUOD's documentation!
    :alt: Coverage Status
 
 
+.. image:: https://img.shields.io/github/license/yzhao062/suod.svg
+   :target: https://github.com/yzhao062/suod/blob/master/LICENSE
+   :alt: License
+
+
 ----
 
 **SUOD** (**S**\calable **U**\nsupervised **O**\utlier **D**\etection) is an **acceleration framework for large-scale unsupervised outlier detector training and prediction**.
@@ -74,7 +79,7 @@ To compensate for the unstable nature of unsupervised algorithms, practitioners 
 
 **SUOD** is therefore proposed to address the challenge at three complementary levels:  random projection (**data level**), pseudo-supervised approximation (**model level**), and balanced parallel scheduling (**system level**).
 As mentioned, the key focus is to **accelerate the training and prediction when a large number of anomaly detectors are presented**, while preserving the prediction capacity.
-Since its inception in Jan 2019, SUOD has been successfully used in various academic researches and industry applications, include PyOD :cite:`a-zhao2019pyod` and `IQVIA <https://www.iqvia.com/>`_ medical claim analysis.
+Since its inception in Jan 2019, SUOD has been successfully used in various academic researches and industry applications, include PyOD :cite:`zhao2019pyod` and `IQVIA <https://www.iqvia.com/>`_ medical claim analysis.
 
 
 SUOD is featured for:
@@ -177,8 +182,6 @@ If you use SUOD in a scientific publication, we would appreciate citations to th
 
 .. bibliography:: zreferences.bib
    :cited:
-   :labelprefix: A
-   :keyprefix: a-
 
 
 

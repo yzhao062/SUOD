@@ -159,18 +159,6 @@ class SUOD(object):
                               cost_forecast_loc_fit, cost_forecast_loc_pred):
         """Internal function to valid the initial parameters
 
-        Parameters
-        ----------
-        contamination
-        n_jobs
-        rp_clf_list
-        rp_ng_clf_list
-        approx_clf_list
-        approx_ng_clf_list
-        approx_clf
-        cost_forecast_loc_fit
-        cost_forecast_loc_pred
-
         Returns
         -------
         self : object
@@ -201,7 +189,7 @@ class SUOD(object):
             self.rp_clf_list = rp_clf_list
 
         if rp_ng_clf_list is None:
-            # the algorithms that should be be using random projection
+            # the algorithms that should not be using random projection
             self.rp_ng_clf_list = ['IForest', 'PCA', 'HBOS', 'MCD', 'LMDD']
         else:
             self.rp_ng_clf_list = rp_ng_clf_list
@@ -213,20 +201,21 @@ class SUOD(object):
 
         # validate model approximation list
         if approx_clf_list is None:
-            # the algorithms that should be be using random projection
-            self.approx_clf_list = ['LOF', 'KNN', 'CBLOF', 'OCSVM', 'IForest']
+            # the algorithms that should be be using approximation
+            self.approx_clf_list = ['LOF', 'KNN', 'CBLOF', 'OCSVM']
         else:
             self.approx_clf_list = approx_clf_list
 
         if approx_ng_clf_list is None:
-            # the algorithms that should be be using random projection
+            # the algorithms that should not be using approximation
             self.approx_ng_clf_list = ['PCA', 'HBOS', 'ABOD', 'MCD',
-                                       'LMDD', 'LSCP']
+                                       'LMDD', 'LSCP', 'IForest']
         else:
             self.approx_ng_clf_list = approx_ng_clf_list
 
         this_directory = os.path.abspath(os.path.dirname(__file__))
 
+        # validate the trained model
         if cost_forecast_loc_fit is None:
             self.cost_forecast_loc_fit_ = os.path.join(
                 this_directory, 'saved_models', 'bps_train.joblib')
@@ -242,7 +231,7 @@ class SUOD(object):
         return self
 
     def fit(self, X):
-        """Fit estimator.
+        """Fit all base estimators.
 
         Parameters
         ----------
@@ -294,6 +283,7 @@ class SUOD(object):
 
         # TODO: code cleanup. There is an existing bug for joblib on Windows:
         # https://github.com/joblib/joblib/issues/806
+        # a fix is on the way: https://github.com/joblib/joblib/pull/966
         # max_nbytes can be dropped on other OS
         all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
             delayed(_parallel_fit)(

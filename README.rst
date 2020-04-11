@@ -58,6 +58,10 @@ SUOD: A Scalable Unsupervised Outlier Detection Framework
    :target: https://coveralls.io/github/yzhao062/SUOD
    :alt: Coverage Status
 
+.. image:: https://img.shields.io/github/license/yzhao062/suod.svg
+   :target: https://github.com/yzhao062/suod/blob/master/LICENSE
+   :alt: License
+
 
 ----
 

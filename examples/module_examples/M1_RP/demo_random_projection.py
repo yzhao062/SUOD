@@ -29,7 +29,6 @@ from pyod.utils.utility import precision_n_scores
 from pyod.utils.utility import generate_bagging_indices
 from sklearn.metrics import roc_auc_score
 
-from sklearn.random_projection import johnson_lindenstrauss_min_dim
 from suod.models.jl_projection import jl_fit_transform
 
 import warnings
@@ -38,31 +37,31 @@ warnings.filterwarnings("ignore")
 
 # not all the mat files are included
 mat_file_list = [
-    'annthyroid.mat',
-    'BreastW.mat',
+    # 'annthyroid.mat',
+    # 'BreastW.mat',
     'cardio.mat',
-    'glass.mat',
+    # 'glass.mat',
     # 'http_n.mat',
-    'ionosphere.mat',
-    'letter.mat',
-    'lympho.mat',
-    'mammography.mat',
-    'mnist.mat',
-    'musk.mat',
-    'optdigits.mat',
-    'pendigits.mat',
-    'pima.mat',
+    # 'ionosphere.mat',
+    # 'letter.mat',
+    # 'lympho.mat',
+    # 'mammography.mat',
+    # 'mnist.mat',
+    # 'musk.mat',
+    # 'optdigits.mat',
+    # 'pendigits.mat',
+    # 'pima.mat',
     'satellite.mat',
     'satimage-2.mat',
-    'seismic.mat',
-    'shuttle.mat',
-    'smtp_n.mat',
-    'speech.mat',
-    'vertebral.mat',
-    'vowels.mat',
-    'thyroid.mat',
-    'wbc.mat',
-    'wine.mat'
+    # 'seismic.mat',
+    # 'shuttle.mat',
+    # 'smtp_n.mat',
+    # 'speech.mat',
+    # 'vertebral.mat',
+    # 'vowels.mat',
+    # 'thyroid.mat',
+    # 'wbc.mat',
+    # 'wine.mat'
 ]
 
 n_iter = 10

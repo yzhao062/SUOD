@@ -217,6 +217,8 @@ For instance, you could navigate to /M1_RP/demo_random_projection.py. Demo codes
 **The examples for the full framework** can be found under /examples folder; run "demo_base.py" for
 a simplified example. Run "demo_full.py" for a full example.
 
+It is noted the best performance may be achieved with multiple cores available.
+
 ------------
 
 

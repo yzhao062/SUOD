@@ -25,6 +25,7 @@ from sklearn.metrics import roc_auc_score
 
 import xgboost as xgb
 import lightgbm as lgb
+from sklearn.ensemble import RandomForestRegressor
 
 import warnings
 
@@ -93,9 +94,10 @@ classifiers = {
 }
 
 stat_mat_all = np.zeros([len(classifiers), 10])
-report_list = ['train_roc_orig', 'train_p@n_orig', 'train_roc_kd',
-               'train_p@n_kd', 'test_time_orig', 'test_roc_orig',
-               'test_p@n_orig', 'test_time_kd', 'test_roc_kd', 'test_p@n_kd']
+report_list = ['train_roc_orig', 'train_p@n_orig', 'train_roc_psa',
+               'train_p@n_psa', 
+               'test_time_orig', 'test_roc_orig', 'test_p@n_orig', 
+               'test_time_psa', 'test_roc_psa', 'test_p@n_psa']
 
 classifier_names = ['ABOD', 'CBLOF', 'FB', 'HBOS', 'IF', 'KNN', 'AKNN', 'LOF',
                     'MCD', 'OCSVM', 'PCA']
@@ -122,7 +124,7 @@ for j in range(n_iter):
 
         ################## xgb train scores
 
-        regressor = lgb.LGBMRegressor()
+        regressor = RandomForestRegressor()
         regressor.fit(X_train, pseudo_labels)
         pseudo_scores = regressor.predict(X_train)
         print('Iter', j + 1, i + 1, 'kd', clf_name, '|', 'train stat',
@@ -176,4 +178,6 @@ stat_mat_all = stat_mat_all / n_iter
 roc_summary = pd.DataFrame(stat_mat_all, columns=report_list)
 roc_summary['clf'] = classifier_names
 print(roc_summary)
-roc_summary.to_csv(mat_file_name + '_XGB_' + '.csv', index=False)
+
+# save to local if needed
+roc_summary.to_csv(mat_file_name + '_RF' + '.csv', index=False)

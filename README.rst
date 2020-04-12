@@ -221,7 +221,7 @@ a simplified example. Run "demo_full.py" for a full example.
 
 
 **More to come...**
-Last updated on Feb 22th, 2020.
+Last updated on April 10th, 2020.
 
 Feel free to star for the future update :)
 

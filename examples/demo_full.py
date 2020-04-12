@@ -186,11 +186,5 @@ if __name__ == "__main__":
     evaluate_print('orig', y_test, average(predicted_scores_orig))
     evaluate_print('new', y_test, average(predicted_scores))
 
-    evaluate_print('orig max', y_test, maximization(predicted_scores_orig))
-    evaluate_print('new max', y_test, maximization(predicted_scores))
-
-    evaluate_print('orig aom', y_test, aom(predicted_scores_orig))
-    evaluate_print('new aom', y_test, aom(predicted_scores))
-
     evaluate_print('orig moa', y_test, moa(predicted_scores_orig))
     evaluate_print('new moa', y_test, moa(predicted_scores))

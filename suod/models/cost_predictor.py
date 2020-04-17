@@ -49,15 +49,14 @@ def build_cost_predictor(file_name, output_file, save_to_local=True):
 
     Parameters
     ----------
-    file_name
+    file_name : string
+        The training table of algorithm performance.
+
     output_file
     save_to_local
-
-    Returns
-    -------
-
     """
-    # read in the data file
+
+    # read in the data file，
     # WS = pd.read_excel(os.path.join('saved_models', file_name),
     #                    sheet_name='sheet1').drop(columns=['File'])
     #
@@ -85,6 +84,7 @@ def build_cost_predictor(file_name, output_file, save_to_local=True):
     # p = indices_to_one_hot([2,3], 11)
 
     X = np.concatenate((X[:, [0, 1, 2]], w), axis=1)
+    # this is currently a hardcoded string
     indices = [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     X = X[:, indices]
 
@@ -93,6 +93,7 @@ def build_cost_predictor(file_name, output_file, save_to_local=True):
     pearson = []
     spearman = []
 
+    # fix for 10 fold random CV now
     for i in range(10):
         X_train, X_test, y_train, y_test = train_test_split(X[:, ], y,
                                                             test_size=0.1)

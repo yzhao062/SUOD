@@ -119,6 +119,33 @@ def build_codes(base_estimators, clf_list, ng_clf_list, flag_global):
 
 
 def raw_score_to_proba(decision_scores, test_scores, method='linear'):
+    """Utility function to convert raw scores to probability. The
+    transformation can be either linear or using unify introduced in
+    :cite:`kriegel2011interpreting`.
+
+    Parameters
+    ----------
+    decision_scores : numpy array of shape (n_samples,)
+        The outlier scores of the training data.
+        The higher, the more abnormal. Outliers tend to have higher
+        scores. This value is available once the detector is fitted.
+
+    test_scores : numpy array of shape (n_samples,)
+        The outlier scores of the test data to be converted.
+        The higher, the more abnormal. Outliers tend to have higher
+        scores. This value is available once the detector is fitted.
+
+    method : str, optional (default='linear')
+        The transformation method, either 'linear' or 'unify'
+
+    Returns
+    -------
+    outlier_probability : numpy array of shape (n_samples,)
+        For each observation, tells whether or not
+        it should be considered as an outlier according to the
+        fitted model. Return the outlier probability, ranging
+        in [0,1].
+    """
     probs = np.zeros([test_scores.shape[0], 2])
     if method == 'linear':
         scaler = MinMaxScaler().fit(decision_scores.reshape(-1, 1))

@@ -8,8 +8,8 @@ branches:
     - development
 environment:
   matrix:
-    - PYTHON: "C:\\Python35-x64"
     - PYTHON: "C:\\Python36-x64"
+    - PYTHON: "C:\\Python37-x64"
 
 skip_commits:
   files:

@@ -223,7 +223,7 @@ It is noted the best performance may be achieved with multiple cores available.
 
 
 **More to come...**
-Last updated on April 10th, 2020.
+Last updated on April 20th, 2020.
 
 Feel free to star for the future update :)
 

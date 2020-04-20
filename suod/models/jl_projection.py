@@ -41,35 +41,34 @@ def jl_fit_transform(X, objective_dim, method="basic"):
     X_transformed : numpy array of shape (n_samples, objective_dim)
         The dataset after the JL projection.
 
-    jlt_transformer : object
+    jl_transformer : object
         Transformer instance.
-
     """
     if method.lower() == "basic":
-        jlt_transformer = (1 / math.sqrt(objective_dim)) \
+        jl_transformer = (1 / math.sqrt(objective_dim)) \
                           * np.random.normal(0, 1, size=(objective_dim,
                                                          len(X[0])))
     elif method.lower() == "discrete":
-        jlt_transformer = (1 / math.sqrt(objective_dim)) \
+        jl_transformer = (1 / math.sqrt(objective_dim)) \
                           * np.random.choice([-1, 1],
                                              size=(objective_dim, len(X[0])))
     elif method.lower() == "circulant":
         from scipy.linalg import circulant
         first_row = np.random.normal(0, 1, size=(1, len(X[0])))
-        jlt_transformer = ((1 / math.sqrt(objective_dim))
+        jl_transformer = ((1 / math.sqrt(objective_dim))
                            * circulant(first_row))[:objective_dim]
     elif method.lower() == "toeplitz":
         from scipy.linalg import toeplitz
         first_row = np.random.normal(0, 1, size=(1, len(X[0])))
         first_column = np.random.normal(0, 1, size=(1, objective_dim))
-        jlt_transformer = ((1 / math.sqrt(objective_dim))
+        jl_transformer = ((1 / math.sqrt(objective_dim))
                            * toeplitz(first_column, first_row))
     else:
         NotImplementedError('Wrong transformation type')
 
-    jlt_transformer = jlt_transformer.T
+    jl_transformer = jl_transformer.T
 
-    return np.dot(X, jlt_transformer), jlt_transformer
+    return np.dot(X, jl_transformer), jl_transformer
 
 
 def jl_transform(X, jl_transformer):
@@ -77,12 +76,16 @@ def jl_transform(X, jl_transformer):
 
     Parameters
     ----------
-    X
-    jl_transformer
+    X : numpy array of shape (n_samples, n_features)
+        The input samples.
+
+    jl_transformer : object
+        Fitted transformer instance.
 
     Returns
     -------
-
+    X_transformed : numpy array of shape (n_samples, reduced_dimensions)
+        Transformed matrix.
     """
     X = check_array(X)
     jl_transformer = check_array(jl_transformer)

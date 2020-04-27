@@ -71,9 +71,10 @@ Notably, anomaly detection is often formulated as an unsupervised problem since 
 To compensate for the unstable nature of unsupervised algorithms, practitioners often build a large number of models for further combination and analysis, e.g., taking the average or majority vote.
 **However, this poses scalability challenges in high-dimensional, large datasets**, especially for proximity-base models operating in Euclidean space.
 
-**SUOD** is therefore proposed to address the challenge at three complementary levels:  random projection (**data level**), pseudo-supervised approximation (**model level**), and balanced parallel scheduling (**system level**).
+**SUOD** is therefore proposed to address the challenge at three complementary levels: random projection (**data level**), pseudo-supervised approximation (**model level**), and balanced parallel scheduling (**system level**).
 As mentioned, the key focus is to **accelerate the training and prediction when a large number of anomaly detectors are presented**, while preserving the prediction capacity.
 Since its inception in Jan 2019, SUOD has been successfully used in various academic researches and industry applications, include PyOD [#Zhao2019PyOD]_ and `IQVIA <https://www.iqvia.com/>`_ medical claim analysis.
+It could be especially useful for outlier ensembles that rely on a large number of base estimators.
 
 
 .. image:: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/system_overview.png
@@ -223,7 +224,7 @@ It is noted the best performance may be achieved with multiple cores available.
 
 
 **More to come...**
-Last updated on April 20th, 2020.
+Last updated on April 27th, 2020.
 
 Feel free to star for the future update :)
 

@@ -1,6 +1,7 @@
-joblib
+joblib>=0.14.1
 matplotlib
 numpy>=1.13
 scipy>=0.19.1
 scikit_learn>=0.19.1
+psutil
 pyod>=0.7.5

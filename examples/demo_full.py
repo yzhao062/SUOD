@@ -40,10 +40,10 @@ if __name__ == "__main__":
     approx_clf = RandomForestRegressor()
     # load files
     mat_file_list = [
-        'cardio.mat',
+        # 'cardio.mat',
         # 'satellite.mat',
         # 'satimage-2.mat',
-        # 'mnist.mat',
+        'mnist.mat',
     ]
 
     mat_file = mat_file_list[0]

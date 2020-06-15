@@ -3,9 +3,6 @@ import os
 import sys
 
 import unittest
-from sklearn.utils.testing import assert_equal
-from sklearn.utils.testing import assert_raises
-from sklearn.utils.testing import assert_true
 
 import numpy as np
 

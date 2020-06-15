@@ -129,7 +129,7 @@ SUOD is featured for:
 ----
 
 A preliminary version (`accepted at AAAI-20 Security Workshop <http://aics.site/AICS2020/>`_) can be accessed on `arxiv <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
-The extended version (under submission at `KDD 2020 (ADS track) <https://www.kdd.org/kdd2020/>`_) can be accessed `here <http://www.andrew.cmu.edu/user/yuezhao2/papers/20-kdd-insubmission-suod.pdf>`_.
+The extended version (under submission at a major ML system conference) can be accessed `here <http://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
 
 
 If you use SUOD in a scientific publication, we would appreciate citations to the following paper::

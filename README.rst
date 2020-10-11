@@ -66,12 +66,12 @@ SUOD: A Scalable Unsupervised Outlier Detection Framework
 ----
 
 
-**SUOD** (**S**\calable **U**\nsupervised **O**\utlier **D**\etection) is an **acceleration framework for large-scale unsupervised outlier detector training and prediction**.
-Notably, anomaly detection is often formulated as an unsupervised problem since the ground truth is expensive to acquire.
-To compensate for the unstable nature of unsupervised algorithms, practitioners often build a large number of models for further combination and analysis, e.g., taking the average or majority vote.
-**However, this poses scalability challenges in high-dimensional, large datasets**, especially for proximity-base models operating in Euclidean space.
+**SUOD** (**S**\calable **U**\nsupervised **O**\utlier **D**\etection) is an **acceleration framework for large-scale unsupervised heterogeneous outlier detector training and prediction**.
+Outlier detection (OD) is a key data mining task for identifying abnormal objects from general samples with numerous high-stake applications including fraud detection and intrusion detection. Due to the lack of ground truth labels,
+practitioners often have to build a large number of unsupervised models that are heterogeneous (i.e., different algorithms and hyperparameters) for further combination and analysis with ensemble learning, rather than relying on a single model.
+However, this yields severe scalability issues on high-dimensional, large datasets.
 
-**SUOD** is therefore proposed to address the challenge at three complementary levels: random projection (**data level**), pseudo-supervised approximation (**model level**), and balanced parallel scheduling (**system level**).
+**SUOD** is therefore proposed to address the challenge at three complementary levels: random projection (**data level**), pseudo-supervised approximation (**model level**), and balanced parallel scheduling (**evaluation level**).
 As mentioned, the key focus is to **accelerate the training and prediction when a large number of anomaly detectors are presented**, while preserving the prediction capacity.
 Since its inception in Jan 2019, SUOD has been successfully used in various academic researches and industry applications, include PyOD [#Zhao2019PyOD]_ and `IQVIA <https://www.iqvia.com/>`_ medical claim analysis.
 It could be especially useful for outlier ensembles that rely on a large number of base estimators.
@@ -224,7 +224,7 @@ It is noted the best performance may be achieved with multiple cores available.
 
 
 **More to come...**
-Last updated on April 27th, 2020.
+Last updated on Oct 11th, 2020.
 
 Feel free to star for the future update :)
 

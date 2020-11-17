@@ -72,16 +72,18 @@ Welcome to SUOD's documentation!
 
 ----
 
+**Background**: Outlier detection (OD) is a key data mining task for identifying abnormal objects from general samples with numerous high-stake applications including fraud detection and intrusion detection.
+Due to the lack of ground truth labels, practitioners often have to build a large number of unsupervised models that are heterogeneous (i.e., different algorithms and hyperparameters) for further combination and analysis with ensemble learning, rather than relying on a single model.
+However, **this yields severe scalability issues on high-dimensional, large datasets**.
+
 **SUOD** (**S**\calable **U**\nsupervised **O**\utlier **D**\etection) is an **acceleration framework for large-scale unsupervised heterogeneous outlier detector training and prediction**.
-Outlier detection (OD) is a key data mining task for identifying abnormal objects from general samples with numerous high-stake applications including fraud detection and intrusion detection. Due to the lack of ground truth labels,
-practitioners often have to build a large number of unsupervised models that are heterogeneous (i.e., different algorithms and hyperparameters) for further combination and analysis with ensemble learning, rather than relying on a single model.
-However, this yields severe scalability issues on high-dimensional, large datasets.
+It focuses on three complementary aspects to accelerate (dimensionality reduction for high-dimensional data, model approximation for complex models, and execution efficiency improvement for taskload imbalance within distributed systems), while controlling detection performance degradation.
 
-**SUOD** is therefore proposed to address the challenge at three complementary levels: random projection (**data level**), pseudo-supervised approximation (**model level**), and balanced parallel scheduling (**evaluation level**).
-As mentioned, the key focus is to **accelerate the training and prediction when a large number of anomaly detectors are presented**, while preserving the prediction capacity.
-Since its inception in Jan 2019, SUOD has been successfully used in various academic researches and industry applications, include PyOD :cite:`zhao2019pyod` and `IQVIA <https://www.iqvia.com/>`_ medical claim analysis.
-It could be especially useful for outlier ensembles that rely on a large number of base estimators.
+Since its inception in Sep 2019, SUOD has been successfully used in various academic researches and industry applications with more than 700,000 downloads, including PyOD :cite:`zhao2019pyod` and `IQVIA <https://www.iqvia.com/>`_ medical claim analysis.
 
+
+.. figure:: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/system_overview.png
+    :alt: SUOD Flowchart
 
 SUOD is featured for:
 
@@ -128,8 +130,8 @@ SUOD is featured for:
 
 ----
 
+The extended version (under submission at a major ML system conference) can be `accessed here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
 A preliminary version (`accepted at AAAI-20 Security Workshop <http://aics.site/AICS2020/>`_) can be accessed on `arxiv <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
-The extended version (under submission at a major ML system conference) can be accessed `here <http://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
 
 
 If you use SUOD in a scientific publication, we would appreciate citations to the following paper::

@@ -93,6 +93,11 @@ SUOD is featured for:
 * **Customizable modules and flexible design**: each module may be turned on/off or totally replaced by custom functions.
 
 
+Roadmap:
+
+* Provide more choices of distributed schedulers (adapted for SUOD), e.g., batch sampling, Sparrow (SOSP'13), Pigeon (SoCC'19) etc.
+* Enable the flexibility of selecting data projection methods.
+
 ----
 
 **API Demo**\ :

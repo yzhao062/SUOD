@@ -4,7 +4,7 @@ import sys
 import numpy as np
 
 import unittest
-from sklearn.utils.testing import assert_equal
+from numpy.testing import assert_equal
 
 # temporary solution for relative imports in case pyod is not installed
 # if suod is installed, no need to use the following line

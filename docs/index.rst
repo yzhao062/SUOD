@@ -182,7 +182,7 @@ If you use SUOD in a scientific publication, we would appreciate citations to th
 
 .. rubric:: References
 
-.. bibliography:: zreferences.bib
+.. bibliography::
    :cited:
 
 

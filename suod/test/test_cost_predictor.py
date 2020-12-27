@@ -27,3 +27,6 @@ class TestCostPredictor(unittest.TestCase):
                                    'summary_prediction.txt'),
             output_file="bps_prediction.joblib",
             save_to_local=False)
+
+    def tearDown(self):
+        pass

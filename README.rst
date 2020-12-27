@@ -78,7 +78,7 @@ including PyOD [#Zhao2019PyOD]_ and `IQVIA <https://www.iqvia.com/>`_ medical cl
 
 .. image:: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/system_overview.png
    :target: https://raw.githubusercontent.com/yzhao062/SUOD/master/figs/system_overview.png
-   :alt: SUOD Flowchart
+   :alt: SUOD System
 
 SUOD is featured for:
 
@@ -224,9 +224,9 @@ It is noted the best performance may be achieved with multiple cores available.
 
 
 **More to come...**
-Last updated on Oct 11th, 2020.
+Last updated on Dec 27th, 2020.
 
-Feel free to star for the future update :)
+Feel free to star and watch for the future update :)
 
 ----
 

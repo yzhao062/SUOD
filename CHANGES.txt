@@ -9,3 +9,5 @@ v<0.0.3>, <02/21/2020> -- Add predict_proba.
 v<0.0.3>, <02/22/2020> -- Turn on autotest for Windows by Appveyor.
 v<0.0.4>, <04/20/2020> -- A set of bug fix and code improvement.
 v<0.0.5>, <06/15/2020> -- Unit test updatde.
+v<0.0.5>, <12/15/2020> -- Unit test updatde.
+v<0.0.5>, <12/27/2020> -- Refactor for sklearn 0.24.

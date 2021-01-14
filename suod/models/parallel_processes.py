@@ -121,6 +121,23 @@ def _partition_estimators(n_estimators, n_jobs):
 
 
 def cost_forecast_meta(clf, X, base_estimator_names):
+    """Forecast model cost by pretrained cost estimator.
+
+    Parameters
+    ----------
+    clf : object, sklearn regressor
+        Random forest regressor trained to forecast model cost
+
+    X : numpy array of shape (n_samples, n_features)
+        The input samples.
+
+    base_estimator_names : list of str
+        The list of outlier detection model names in the string format
+
+    Returns
+    -------
+    time_cost_pred : numpy array of outlier detection model cost in seconds.
+    """
     # convert base estimators to the digestible form
     clf_idx = np.asarray(
         list(map(clf_idx_mapping.get, base_estimator_names)))

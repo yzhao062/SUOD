@@ -16,7 +16,7 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.utils import check_array
 
 import joblib
-from joblib import Parallel, delayed
+from joblib import Parallel, delayed, effective_n_jobs
 
 from pyod.models.sklearn_base import _pprint
 from pyod.utils.utility import _get_sklearn_version
@@ -64,7 +64,7 @@ class SUOD(object):
     n_jobs : optional (default=1)
         The number of jobs to run in parallel for both `fit` and
         `predict`. If -1, then the number of jobs is set to the
-        number of cores.
+        the number of jobs that can actually run in parallel.
 
     rp_clf_list : list, optional (default=None)
         The list of outlier detection models to use random projection. The
@@ -178,13 +178,15 @@ class SUOD(object):
 
         if n_jobs is None:
             self.n_jobs = 1
+        elif n_jobs == -1:
+            self.n_jobs = effective_n_jobs()
         else:
             self.n_jobs = n_jobs
 
         # validate random projection list
         if rp_clf_list is None:
             # the algorithms that should be be using random projection
-            self.rp_clf_list = ['LOF', 'KNN', 'ABOD']
+            self.rp_clf_list = ['LOF', 'KNN', 'ABOD', 'COF']
         else:
             self.rp_clf_list = rp_clf_list
 

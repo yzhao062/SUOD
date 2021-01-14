@@ -46,23 +46,24 @@ def jl_fit_transform(X, objective_dim, method="basic"):
     """
     if method.lower() == "basic":
         jl_transformer = (1 / math.sqrt(objective_dim)) \
-                          * np.random.normal(0, 1, size=(objective_dim,
-                                                         len(X[0])))
+                         * np.random.normal(0, 1, size=(objective_dim,
+                                                        len(X[0])))
     elif method.lower() == "discrete":
         jl_transformer = (1 / math.sqrt(objective_dim)) \
-                          * np.random.choice([-1, 1],
-                                             size=(objective_dim, len(X[0])))
+                         * np.random.choice([-1, 1],
+                                            size=(objective_dim, len(X[0])))
     elif method.lower() == "circulant":
         from scipy.linalg import circulant
         first_row = np.random.normal(0, 1, size=(1, len(X[0])))
-        jl_transformer = ((1 / math.sqrt(objective_dim))
-                           * circulant(first_row))[:objective_dim]
+        jl_transformer = ((1 / math.sqrt(objective_dim)) * circulant(
+            first_row))[:objective_dim]
     elif method.lower() == "toeplitz":
         from scipy.linalg import toeplitz
         first_row = np.random.normal(0, 1, size=(1, len(X[0])))
         first_column = np.random.normal(0, 1, size=(1, objective_dim))
-        jl_transformer = ((1 / math.sqrt(objective_dim))
-                           * toeplitz(first_column, first_row))
+        jl_transformer = (
+                    (1 / math.sqrt(objective_dim)) * toeplitz(first_column,
+                                                              first_row))
     else:
         NotImplementedError('Wrong transformation type')
 

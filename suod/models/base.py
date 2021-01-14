@@ -45,6 +45,7 @@ else:
     from sklearn.externals.funcsigs import signature
 
 
+# noinspection PyPep8
 class SUOD(object):
     """SUOD (Scalable Unsupervised Outlier Detection) is an acceleration
     framework for large scale unsupervised outlier detector training and
@@ -240,9 +241,6 @@ class SUOD(object):
         X : numpy array of shape (n_samples, n_features)
             The input samples.
 
-        y : numpy array of shape (n_samples,), optional (default=None)
-            The ground truth of the input samples (labels).
-
         Returns
         -------
         self : object
@@ -301,7 +299,8 @@ class SUOD(object):
 
         print('Balanced Scheduling Total Train Time:', time.time() - start)
 
-        # reformat and unfold the lists. Save the trained estimators and transformers
+        # reformat and unfold the lists. Save the trained estimators and
+        # transformers
         all_results = list(map(list, zip(*all_results)))
 
         # overwrite estimators
@@ -510,10 +509,6 @@ class SUOD(object):
         X : numpy array of shape (n_samples, n_features)
             The input samples.
 
-        method : str, optional (default='linear')
-            probability conversion method. It must be one of
-            'linear' or 'unify'.
-
         Returns
         -------
         outlier_probability : numpy array of shape (n_samples,)
@@ -588,7 +583,7 @@ class SUOD(object):
         """Returns iterator over estimators in the ensemble."""
         return iter(self.base_estimators)
 
-    # noinspection PyMethodParameters
+    # noinspection PyMethodParameters,PyPep8
     def _get_param_names(cls):
         # noinspection PyPep8
         """Get parameter names for the estimator
@@ -664,7 +659,7 @@ class SUOD(object):
         return out
 
     def set_params(self, **params):
-        # noinspection PyPep8
+        # noinspection PyPep8,PyPep8
         """Set the parameters of this estimator.
         The method works on simple estimators as well as on nested objects
         (such as pipelines). The latter have parameters of the form

@@ -57,7 +57,8 @@ class TestBASE(unittest.TestCase):
                           contamination=self.contamination,
                           approx_flag_global=True,
                           cost_forecast_loc_fit=self.cost_forecast_loc_fit_,
-                          cost_forecast_loc_pred=self.cost_forecast_loc_pred_)
+                          cost_forecast_loc_pred=self.cost_forecast_loc_pred_,
+                          verbose=True)
 
     def test_initialization(self):
         self.model.get_params()

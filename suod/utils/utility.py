@@ -12,6 +12,7 @@ from pyod.models.knn import KNN
 from pyod.models.hbos import HBOS
 from pyod.models.abod import ABOD
 from pyod.models.mcd import MCD
+from pyod.models.lscp import LSCP
 
 # suppress warnings
 import warnings
@@ -167,8 +168,87 @@ def raw_score_to_proba(decision_scores, test_scores, method='linear'):
             method, 'is not a valid probability conversion method')
 
 
-def get_estimators(contamination):
-    """Internal method to create a list of 600 random base outlier detectors.
+def get_estimators_small(contamination=0.1):
+    """Internal method to create a list of 600 base outlier detectors.
+
+    Parameters
+    ----------
+    contamination : float in (0., 0.5), optional (default=0.1)
+        The amount of contamination of the data set,
+        i.e. the proportion of outliers in the data set. Used when fitting to
+        define the threshold on the decision function.
+
+    Returns
+    -------
+    base_detectors : list
+        A list of initialized random base outlier detectors.
+
+    """
+    base_estimators = [
+        LOF(n_neighbors=5, contamination=contamination),
+        LOF(n_neighbors=15, contamination=contamination),
+        LOF(n_neighbors=25, contamination=contamination),
+        LOF(n_neighbors=35, contamination=contamination),
+        LOF(n_neighbors=45, contamination=contamination),
+        HBOS(contamination=contamination),
+        PCA(contamination=contamination),
+        OCSVM(contamination=contamination),
+        KNN(n_neighbors=5, contamination=contamination),
+        KNN(n_neighbors=15, contamination=contamination),
+        KNN(n_neighbors=25, contamination=contamination),
+        KNN(n_neighbors=35, contamination=contamination),
+        KNN(n_neighbors=45, contamination=contamination),
+        IForest(n_estimators=50, contamination=contamination),
+        IForest(n_estimators=100, contamination=contamination),
+
+        LOF(n_neighbors=5, contamination=contamination),
+        LOF(n_neighbors=15, contamination=contamination),
+        LOF(n_neighbors=25, contamination=contamination),
+        LOF(n_neighbors=35, contamination=contamination),
+        LOF(n_neighbors=45, contamination=contamination),
+        HBOS(contamination=contamination),
+        PCA(contamination=contamination),
+        OCSVM(contamination=contamination),
+        KNN(n_neighbors=5, contamination=contamination),
+        KNN(n_neighbors=15, contamination=contamination),
+        KNN(n_neighbors=25, contamination=contamination),
+        KNN(n_neighbors=35, contamination=contamination),
+        KNN(n_neighbors=45, contamination=contamination),
+        IForest(n_estimators=50, contamination=contamination),
+        IForest(n_estimators=100, contamination=contamination),
+
+        LOF(n_neighbors=5, contamination=contamination),
+        LOF(n_neighbors=15, contamination=contamination),
+        LOF(n_neighbors=25, contamination=contamination),
+        LOF(n_neighbors=35, contamination=contamination),
+        LOF(n_neighbors=45, contamination=contamination),
+        HBOS(contamination=contamination),
+        PCA(contamination=contamination),
+        OCSVM(contamination=contamination),
+        KNN(n_neighbors=5, contamination=contamination),
+        KNN(n_neighbors=15, contamination=contamination),
+        KNN(n_neighbors=25, contamination=contamination),
+        KNN(n_neighbors=35, contamination=contamination),
+        KNN(n_neighbors=45, contamination=contamination),
+        IForest(n_estimators=50, contamination=contamination),
+        IForest(n_estimators=100, contamination=contamination),
+
+        LSCP(detector_list=[LOF(contamination=contamination),
+                            LOF(contamination=contamination)]),
+        LSCP(detector_list=[LOF(contamination=contamination),
+                            LOF(contamination=contamination)]),
+        LSCP(detector_list=[LOF(contamination=contamination),
+                            LOF(contamination=contamination)]),
+        LSCP(detector_list=[LOF(contamination=contamination),
+                            LOF(contamination=contamination)]),
+        LSCP(detector_list=[LOF(contamination=contamination),
+                            LOF(contamination=contamination)])
+    ]
+    return base_estimators
+
+
+def get_estimators(contamination=0.1):
+    """Internal method to create a list of 600 base outlier detectors.
 
     Parameters
     ----------

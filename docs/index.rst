@@ -164,6 +164,7 @@ If you use SUOD in a scientific publication, we would appreciate citations to th
 
    install
    example
+   model_persistence
 
 
 .. toctree::

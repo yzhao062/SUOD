@@ -129,23 +129,23 @@ Roadmap:
 
 ----
 
-The extended version (under submission at a major ML system conference) can be `accessed here <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
-A preliminary version (`accepted at AAAI-20 Security Workshop <http://aics.site/AICS2020/>`_) can be accessed on `arxiv <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_.
-
+`The corresponding paper <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_ is published in Conference on Machine Learning Systems (MLSys).
+See https://mlsys.org/ for more information.
 
 
 If you use SUOD in a scientific publication, we would appreciate citations to the following paper::
 
-    @inproceedings{zhao2020suod,
-      author  = {Zhao, Yue and Ding, Xueying and Yang, Jianing and Haoping Bai},
-      title   = {{SUOD}: Toward Scalable Unsupervised Outlier Detection},
-      journal = {Workshops at the Thirty-Fourth AAAI Conference on Artificial Intelligence},
-      year    = {2020}
+
+    @inproceedings{zhao2021suod,
+      title={SUOD: Accelerating Large-scale Unsupervised Heterogeneous Outlier Detection},
+      author={Zhao, Yue and Hu, Xiyang and Cheng, Cheng and Wang, Cong and Wan, Changlin and Wang, Wen and Yang, Jianing and Bai, Haoping and Li, Zheng and Xiao, Cao and others},
+      journal={Conference on Machine Learning Systems (MLSys)},
+      year={2021}
     }
 
 ::
 
-    Yue Zhao, Xueying Ding, Jianing Yang, Haoping Bai, "Toward Scalable Unsupervised Outlier Detection". Workshops at the Thirty-Fourth AAAI Conference on Artificial Intelligence, 2020.
+    Zhao, Y., Hu, X., Cheng, C., Wang, C., Wan, C., Wang, W., Yang, J., Bai, H., Li, Z., Xiao, C. and Wang, Y., 2021. SUOD: Accelerating Large-scale Unsupervised Heterogeneous Outlier Detection. Conference on Machine Learning Systems (MLSys).
 
 
 **Table of Contents**\ :

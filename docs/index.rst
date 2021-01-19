@@ -136,7 +136,7 @@ Roadmap:
 
 ----
 
-`The corresponding paper <https://www.andrew.cmu.edu/user/yuezhao2/papers/20-preprint-suod.pdf>`_ is published in Conference on Machine Learning Systems (MLSys).
+`The corresponding paper <https://www.andrew.cmu.edu/user/yuezhao2/papers/21-mlsys-suod.pdf>`_ is published in Conference on Machine Learning Systems (MLSys).
 See https://mlsys.org/ for more information.
 
 

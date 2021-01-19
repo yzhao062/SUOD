@@ -139,13 +139,13 @@ If you use SUOD in a scientific publication, we would appreciate citations to th
     @inproceedings{zhao2021suod,
       title={SUOD: Accelerating Large-scale Unsupervised Heterogeneous Outlier Detection},
       author={Zhao, Yue and Hu, Xiyang and Cheng, Cheng and Wang, Cong and Wan, Changlin and Wang, Wen and Yang, Jianing and Bai, Haoping and Li, Zheng and Xiao, Cao and others},
-      journal={Conference on Machine Learning Systems (MLSys)},
+      journal={Proceedings of Machine Learning and Systems},
       year={2021}
     }
 
 ::
 
-    Zhao, Y., Hu, X., Cheng, C., Wang, C., Wan, C., Wang, W., Yang, J., Bai, H., Li, Z., Xiao, C. and Wang, Y., 2021. SUOD: Accelerating Large-scale Unsupervised Heterogeneous Outlier Detection. Conference on Machine Learning Systems (MLSys).
+    Zhao, Y., Hu, X., Cheng, C., Wang, C., Wan, C., Wang, W., Yang, J., Bai, H., Li, Z., Xiao, C. and Wang, Y., 2021. SUOD: Accelerating Large-scale Unsupervised Heterogeneous Outlier Detection. Proceedings of Machine Learning and Systems (MLSys).
 
 
 **Table of Contents**\ :

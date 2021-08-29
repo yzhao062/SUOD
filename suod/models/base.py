@@ -118,7 +118,7 @@ class SUOD(object):
     cost_forecast_loc_pred : str, optional
         The location of the pretrained cost prediction forecast for prediction.
 
-    verbose : int, optional (default=0)
+    verbose : bool, optional (default=False)
         Controls the verbosity of the building process.
     """
 
@@ -271,15 +271,17 @@ class SUOD(object):
 
             # use BPS
             n_estimators_list, starts, n_jobs = balanced_scheduling(
-                time_cost_pred, self.n_estimators, self.n_jobs)
+                time_cost_pred, self.n_estimators, self.n_jobs, self.verbose)
         else:
             # use the default sklearn equal split
             n_estimators_list, starts, n_jobs = _partition_estimators(
                 self.n_estimators, self.n_jobs)
 
         # fit the base models
-        print('Parallel Training...')
-        start = time.time()
+        # fit the base models
+        if self.verbose:
+            print('Parallel Training...')
+            start = time.time()
 
         # TODO: code cleanup. There is an existing bug for joblib on Windows:
         # https://github.com/joblib/joblib/issues/806
@@ -297,7 +299,8 @@ class SUOD(object):
                 verbose=self.verbose)
             for i in range(n_jobs))
 
-        print('Balanced Scheduling Total Train Time:', time.time() - start)
+        if self.verbose:
+            print('Balanced Scheduling Total Train Time:', time.time() - start)
 
         # reformat and unfold the lists. Save the trained estimators and
         # transformers
@@ -382,7 +385,7 @@ class SUOD(object):
                                                 self.base_estimator_names)
 
             n_estimators_list, starts, n_jobs = balanced_scheduling(
-                time_cost_pred, self.n_estimators, self.n_jobs)
+                time_cost_pred, self.n_estimators, self.n_jobs, self.verbose)
         else:
             # use simple equal split by sklearn
             n_estimators_list, starts, n_jobs = _partition_estimators(
@@ -454,7 +457,7 @@ class SUOD(object):
                                                 self.base_estimator_names)
 
             n_estimators_list, starts, n_jobs = balanced_scheduling(
-                time_cost_pred, self.n_estimators, self.n_jobs)
+                time_cost_pred, self.n_estimators, self.n_jobs, self.verbose)
         else:
             # use simple equal split by sklearn
             n_estimators_list, starts, n_jobs = _partition_estimators(
@@ -530,7 +533,7 @@ class SUOD(object):
                                                 self.base_estimator_names)
 
             n_estimators_list, starts, n_jobs = balanced_scheduling(
-                time_cost_pred, self.n_estimators, self.n_jobs)
+                time_cost_pred, self.n_estimators, self.n_jobs, self.verbose)
         else:
             # use simple equal split by sklearn
             n_estimators_list, starts, n_jobs = _partition_estimators(

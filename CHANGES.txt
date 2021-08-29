@@ -13,3 +13,4 @@ v<0.0.5>, <12/15/2020> -- Unit test updatde.
 v<0.0.5>, <12/27/2020> -- Refactor for sklearn 0.24.
 v<0.0.6>, <01/14/2021> -- Fix n_jobs issue and code refactor.
 v<0.0.6>, <01/14/2021> -- Add model save and load functionality.
+v<0.0.7>, <08/29/2021> -- Update to be integrated in PyOD.

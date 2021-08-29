@@ -20,7 +20,7 @@ def indices_to_one_hot(data, nb_classes):
     return np.eye(nb_classes)[targets]
 
 
-def balanced_scheduling(time_cost_pred, n_estimators, n_jobs):
+def balanced_scheduling(time_cost_pred, n_estimators, n_jobs, verbose=False):
     """Conduct balanced scheduling based on the sum of rank, for both train
     and prediction. The algorithm will enforce the equal sum of ranks among 
     workers.
@@ -38,6 +38,9 @@ def balanced_scheduling(time_cost_pred, n_estimators, n_jobs):
         The number of jobs to run in parallel for both `fit` and
         `predict`. If -1, then the number of jobs is set to the
         number of cores.
+
+    verbose : bool, optional (default=False)
+        Controls the verbosity of the building process.
 
     Returns
     -------
@@ -88,7 +91,8 @@ def balanced_scheduling(time_cost_pred, n_estimators, n_jobs):
 
     for j in range(n_jobs):
         sum_check.append(np.sum(ranks[starts[j]:starts[j + 1]]))
-        print('Worker', j + 1, 'sum of ranks:', sum_check[j])
+        if verbose:
+            print('Worker', j + 1, 'sum of ranks:', sum_check[j])
         n_estimators_list.append(starts[j + 1] - starts[j])
 
     print()
@@ -99,7 +103,8 @@ def balanced_scheduling(time_cost_pred, n_estimators, n_jobs):
 
     xdiff = [starts[n] - starts[n - 1] for n in range(1, len(starts))]
 
-    print("Split among workers BPS:", starts, xdiff)
+    if verbose:
+        print("Split among workers BPS:", starts, xdiff)
     return n_estimators_list, starts, n_jobs
 
 

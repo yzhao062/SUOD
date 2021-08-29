@@ -275,7 +275,7 @@ class SUOD(object):
         else:
             # use the default sklearn equal split
             n_estimators_list, starts, n_jobs = _partition_estimators(
-                self.n_estimators, self.n_jobs)
+                self.n_estimators, self.n_jobs, verbose=self.verbose)
 
         # fit the base models
         # fit the base models
@@ -338,7 +338,7 @@ class SUOD(object):
                                            self.approx_flag_global)
 
         n_estimators_list, starts, n_jobs = _partition_estimators(
-            self.n_estimators, n_jobs=self.n_jobs)
+            self.n_estimators, n_jobs=self.n_jobs, verbose=self.verbose)
 
         all_approx_results = Parallel(n_jobs=n_jobs, verbose=True)(
             delayed(_parallel_approx_estimators)(
@@ -389,7 +389,7 @@ class SUOD(object):
         else:
             # use simple equal split by sklearn
             n_estimators_list, starts, n_jobs = _partition_estimators(
-                self.n_estimators, self.n_jobs)
+                self.n_estimators, self.n_jobs, verbose=self.verbose)
 
         # fit the base models
         if self.verbose:
@@ -461,7 +461,7 @@ class SUOD(object):
         else:
             # use simple equal split by sklearn
             n_estimators_list, starts, n_jobs = _partition_estimators(
-                self.n_estimators, self.n_jobs)
+                self.n_estimators, self.n_jobs, verbose=self.verbose)
 
         # fit the base models
         if self.verbose:
@@ -537,7 +537,7 @@ class SUOD(object):
         else:
             # use simple equal split by sklearn
             n_estimators_list, starts, n_jobs = _partition_estimators(
-                self.n_estimators, self.n_jobs)
+                self.n_estimators, self.n_jobs, verbose=self.verbose)
 
         # fit the base models
         if self.verbose:

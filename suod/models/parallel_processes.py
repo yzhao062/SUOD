@@ -108,8 +108,9 @@ def balanced_scheduling(time_cost_pred, n_estimators, n_jobs, verbose=False):
     return n_estimators_list, starts, n_jobs
 
 
-def _partition_estimators(n_estimators, n_jobs):
-    """Private function used to partition estimators between jobs."""
+def _partition_estimators(n_estimators, n_jobs, verbose=False):
+    """Private function used to partition estimators between jobs.
+    """
     # Compute the number of jobs
     n_jobs = min(effective_n_jobs(n_jobs), n_estimators)
 
@@ -121,7 +122,8 @@ def _partition_estimators(n_estimators, n_jobs):
 
     xdiff = [starts[n] - starts[n - 1] for n in range(1, len(starts))]
 
-    print("Split among workers default:", starts, xdiff)
+    if verbose:
+        print("Split among workers default:", starts, xdiff)
     return n_estimators_per_job.tolist(), [0] + starts.tolist(), n_jobs
 
 

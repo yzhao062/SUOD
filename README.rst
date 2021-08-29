@@ -39,8 +39,8 @@ SUOD: Accelerating Large-scare Unsupervised Heterogeneous Outlier Detection
 **Build Status & Coverage & Maintainability & License**
 
 
-.. image:: https://travis-ci.org/yzhao062/suod.svg?branch=master
-   :target: https://travis-ci.org/yzhao062/suod
+.. image::  https://app.travis-ci.com/yzhao062/SUOD.svg?branch=master
+   :target: https://app.travis-ci.com/yzhao062/SUOD
    :alt: Build Status
 
 
@@ -64,6 +64,29 @@ SUOD: Accelerating Large-scare Unsupervised Heterogeneous Outlier Detection
 
 
 ----
+
+**News**: SUOD is now integrated into `PyOD <https://github.com/yzhao062/pyod>`_.
+It can be easily invoked in PyOD by following the `SUOD example <https://github.com/yzhao062/pyod/blob/master/examples/suod_example.py>`_.
+In a nutshell, we could easily initialize a few outlier detectors and then use SUOD for collective training and prediction!
+
+.. code-block:: python
+
+    from pyod.models.suod import SUOD
+
+    # initialized a group of outlier detectors for acceleration
+    detector_list = [LOF(n_neighbors=15), LOF(n_neighbors=20),
+                     LOF(n_neighbors=25), LOF(n_neighbors=35),
+                     COPOD(), IForest(n_estimators=100),
+                     IForest(n_estimators=200)]
+
+    # decide the number of parallel process, and the combination method
+    # then clf can be used as any outlier detection model
+    clf = SUOD(base_estimators=detector_list, n_jobs=2, combination='average',
+               verbose=False)
+
+
+----
+
 
 **Background**: Outlier detection (OD) is a key data mining task for identifying abnormal objects from general samples with numerous high-stake applications including fraud detection and intrusion detection.
 Due to the lack of ground truth labels, practitioners often have to build a large number of unsupervised models that are heterogeneous (i.e., different algorithms and hyperparameters) for further combination and analysis with ensemble learning, rather than relying on a single model.

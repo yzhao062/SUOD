@@ -19,7 +19,6 @@ import joblib
 from joblib import Parallel, delayed, effective_n_jobs
 
 from pyod.models.sklearn_base import _pprint
-from pyod.utils.utility import _get_sklearn_version
 from pyod.utils.utility import check_parameter
 
 from suod.models.parallel_processes import cost_forecast_meta
@@ -39,10 +38,7 @@ from collections import defaultdict
 sys.path.append(
     os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
 
-if _get_sklearn_version() > 20:
-    from inspect import signature
-else:
-    from sklearn.externals.funcsigs import signature
+from inspect import signature
 
 
 # noinspection PyPep8

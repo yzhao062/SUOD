@@ -45,9 +45,9 @@ Welcome to SUOD's documentation!
 **Build Status & Coverage & Maintainability & License**
 
 
-.. image:: https://travis-ci.org/yzhao062/suod.svg?branch=master
-   :target: https://travis-ci.org/yzhao062/suod
-   :alt: Build Status
+.. image:: https://github.com/yzhao062/suod/actions/workflows/testing.yml/badge.svg
+   :target: https://github.com/yzhao062/suod/actions/workflows/testing.yml
+   :alt: testing
 
 
 .. image:: https://circleci.com/gh/yzhao062/SUOD.svg?style=svg

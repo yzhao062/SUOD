@@ -39,9 +39,9 @@ SUOD: Accelerating Large-scare Unsupervised Heterogeneous Outlier Detection
 **Build Status & Coverage & Maintainability & License**
 
 
-.. image::  https://app.travis-ci.com/yzhao062/SUOD.svg?branch=master
-   :target: https://app.travis-ci.com/yzhao062/SUOD
-   :alt: Build Status
+.. image:: https://github.com/yzhao062/suod/actions/workflows/testing.yml/badge.svg
+   :target: https://github.com/yzhao062/suod/actions/workflows/testing.yml
+   :alt: testing
 
 
 .. image:: https://circleci.com/gh/yzhao062/SUOD.svg?style=svg

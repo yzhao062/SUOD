@@ -246,7 +246,8 @@ class SUOD(object):
         n_samples, n_features = X.shape[0], X.shape[1]
 
         # Validate target_dim_frac for random projection
-        if isinstance(self.target_dim_frac, (numbers.Integral, np.integer)):
+        if isinstance(self.target_dim_frac,
+                      (numbers.Integral, int, np.int32, np.int64)):
             self.target_dim_frac_ = self.target_dim_frac
         else:  # float
             self.target_dim_frac_ = int(self.target_dim_frac * n_features)

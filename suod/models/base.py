@@ -251,6 +251,10 @@ class SUOD(object):
         else:  # float
             self.target_dim_frac_ = int(self.target_dim_frac * n_features)
 
+        # it should have at least 1 dimension
+        if self.target_dim_frac_ < 1:
+            self.target_dim_frac_ = 1
+
         # build flags for random projection
         self.rp_flags_, _ = build_codes(self.base_estimators, self.rp_clf_list,
                                         self.rp_ng_clf_list,

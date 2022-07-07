@@ -27,8 +27,8 @@ class TestModelSaveLoad(unittest.TestCase):
         self.contamination = 0.1
         self.roc_floor = 0.6
         self.random_state = 42
-        self.X_train, self.y_train, self.X_test, self.y_test = generate_data(
-            n_train=self.n_train, n_test=self.n_test,
+        self.X_train, self.X_test, self.y_train, self.y_test = generate_data(
+            n_train=self.n_train, n_test=self.n_test, behaviour='new',
             contamination=self.contamination, random_state=self.random_state)
 
         self.base_estimators = [
@@ -70,7 +70,7 @@ class TestModelSaveLoad(unittest.TestCase):
         dump(self.model, 'model.joblib')
         assert (os.path.exists('model.joblib'))
         os.remove('model.joblib')
-        
+
     def test_load(self):
         self.model.fit(self.X_train)  # fit all models with X
         self.model.approximate(
@@ -87,7 +87,7 @@ class TestModelSaveLoad(unittest.TestCase):
         assert (len(predicted_labels) != 0)
         # assert (predicted_scores)
         # assert (predicted_probs)
-        
+
     def tearDown(self):
         if os.path.exists('model.joblib'):
             os.remove('model.joblib')

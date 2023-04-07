@@ -95,8 +95,6 @@ def balanced_scheduling(time_cost_pred, n_estimators, n_jobs, verbose=False):
             print('Worker', j + 1, 'sum of ranks:', sum_check[j])
         n_estimators_list.append(starts[j + 1] - starts[j])
 
-    print()
-
     # Confirm the length of the estimators is consistent
     assert (np.sum(n_estimators_list) == n_estimators)
     assert (np.abs(rank_sum - np.sum(sum_check)) < 0.1)

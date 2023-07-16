@@ -19,6 +19,8 @@ from pyod.models.hbos import HBOS
 from pyod.models.lscp import LSCP
 from joblib import dump, load
 
+from ..utils.utility import _get_sklearn_version
+
 
 class TestModelSaveLoad(unittest.TestCase):
     def setUp(self):
@@ -47,11 +49,19 @@ class TestModelSaveLoad(unittest.TestCase):
 
         this_directory = os.path.abspath(os.path.dirname(__file__))
 
-        self.cost_forecast_loc_fit_ = os.path.join(this_directory,
-                                                   'bps_train.joblib')
+        sklearn_version = _get_sklearn_version()
+        if sklearn_version[:3] >= '1.3':
+            self.cost_forecast_loc_fit_ = os.path.join(this_directory,
+                                                       'bps_train.joblib')
 
-        self.cost_forecast_loc_pred_ = os.path.join(this_directory,
-                                                    'bps_prediction.joblib')
+            self.cost_forecast_loc_pred_ = os.path.join(this_directory,
+                                                        'bps_prediction.joblib')
+        else:
+            self.cost_forecast_loc_fit_ = os.path.join(this_directory,
+                                                       'bps_train_old.joblib')
+
+            self.cost_forecast_loc_pred_ = os.path.join(this_directory,
+                                                        'bps_prediction_old.joblib')
 
         self.model = SUOD(base_estimators=self.base_estimators, n_jobs=2,
                           rp_flag_global=True, bps_flag=True,
@@ -81,7 +91,8 @@ class TestModelSaveLoad(unittest.TestCase):
         model = load('model.joblib')
 
         predicted_labels = model.predict(self.X_test)  # predict labels
-        predicted_scores = model.decision_function(self.X_test)  # predict scores
+        predicted_scores = model.decision_function(
+            self.X_test)  # predict scores
         predicted_probs = model.predict_proba(self.X_test)  # predict scores
 
         assert (len(predicted_labels) != 0)

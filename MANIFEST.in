@@ -6,3 +6,5 @@ include requirements.txt
 include suod/models
 include suod/models/saved_models/bps_prediction.joblib
 include suod/models/saved_models/bps_train.joblib
+include suod/models/saved_models/bps_prediction_old.joblib
+include suod/models/saved_models/bps_train_old.joblib

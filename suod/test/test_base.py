@@ -12,6 +12,7 @@ import numpy as np
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from suod.models.base import SUOD
+from suod.utils.utility import _get_sklearn_version
 from pyod.utils.data import generate_data
 from pyod.models.lof import LOF
 from pyod.models.pca import PCA
@@ -46,11 +47,19 @@ class TestBASE(unittest.TestCase):
 
         this_directory = os.path.abspath(os.path.dirname(__file__))
 
-        self.cost_forecast_loc_fit_ = os.path.join(this_directory,
-                                                   'bps_train.joblib')
+        sklearn_version = _get_sklearn_version()
+        if sklearn_version[:3] >= '1.3':
+            self.cost_forecast_loc_fit_ = os.path.join(this_directory,
+                                                       'bps_train.joblib')
 
-        self.cost_forecast_loc_pred_ = os.path.join(this_directory,
-                                                    'bps_prediction.joblib')
+            self.cost_forecast_loc_pred_ = os.path.join(this_directory,
+                                                        'bps_prediction.joblib')
+        else:
+            self.cost_forecast_loc_fit_ = os.path.join(this_directory,
+                                                       'bps_train_old.joblib')
+
+            self.cost_forecast_loc_pred_ = os.path.join(this_directory,
+                                                        'bps_prediction_old.joblib')
 
         self.model = SUOD(base_estimators=self.base_estimators, n_jobs=2,
                           rp_flag_global=True, bps_flag=True,

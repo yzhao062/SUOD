@@ -29,7 +29,7 @@ from suod.models.parallel_processes import _parallel_predict_proba
 from suod.models.parallel_processes import _parallel_decision_function
 from suod.models.parallel_processes import _partition_estimators
 from suod.models.parallel_processes import _parallel_approx_estimators
-from ..utils.utility import _unfold_parallel, build_codes
+from ..utils.utility import _unfold_parallel, build_codes, _get_sklearn_version
 
 import warnings
 from collections import defaultdict
@@ -216,8 +216,14 @@ class SUOD(object):
 
         # validate the trained model
         if cost_forecast_loc_fit is None:
-            self.cost_forecast_loc_fit_ = os.path.join(
-                this_directory, 'saved_models', 'bps_train.joblib')
+
+            sklearn_version = _get_sklearn_version()
+            if sklearn_version[:3] >= '1.3':
+                self.cost_forecast_loc_fit_ = os.path.join(
+                    this_directory, 'saved_models', 'bps_train.joblib')
+            else:
+                self.cost_forecast_loc_fit_ = os.path.join(
+                    this_directory, 'saved_models', 'bps_train_old.joblib')
         else:
             self.cost_forecast_loc_fit_ = cost_forecast_loc_fit
 

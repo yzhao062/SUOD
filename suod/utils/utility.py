@@ -1,21 +1,21 @@
 # Author: Yue Zhao <zhaoy@cmu.edu>
 # License: MIT
-import numpy as np
-from scipy.special import erf
-from sklearn.preprocessing import MinMaxScaler
-
-from pyod.models.iforest import IForest
-from pyod.models.lof import LOF
-from pyod.models.ocsvm import OCSVM
-from pyod.models.pca import PCA
-from pyod.models.knn import KNN
-from pyod.models.hbos import HBOS
-from pyod.models.abod import ABOD
-from pyod.models.mcd import MCD
-from pyod.models.lscp import LSCP
-
 # suppress warnings
 import warnings
+
+import numpy as np
+import sklearn
+from pyod.models.abod import ABOD
+from pyod.models.hbos import HBOS
+from pyod.models.iforest import IForest
+from pyod.models.knn import KNN
+from pyod.models.lof import LOF
+from pyod.models.lscp import LSCP
+from pyod.models.mcd import MCD
+from pyod.models.ocsvm import OCSVM
+from pyod.models.pca import PCA
+from scipy.special import erf
+from sklearn.preprocessing import MinMaxScaler
 
 clf_idx_mapping = {
     'ABOD': 1,
@@ -166,6 +166,26 @@ def raw_score_to_proba(decision_scores, test_scores, method='linear'):
     else:
         raise ValueError(
             method, 'is not a valid probability conversion method')
+
+
+def _get_sklearn_version():  # pragma: no cover
+    """ Utility function to decide the version of sklearn.
+    PyOD will result in different behaviors with different sklearn version
+
+    Returns
+    -------
+    sk_learn version : int
+
+    """
+
+    sklearn_version = str(sklearn.__version__)
+    # print(sklearn_version)
+    # if int(sklearn_version.split(".")[1]) < 19 or int(
+    #         sklearn_version.split(".")[1]) > 24:
+    #     raise ValueError("Sklearn version error")
+    # print(sklearn_version)
+
+    return sklearn_version
 
 
 def get_estimators_small(contamination=0.1):

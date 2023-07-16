@@ -8,37 +8,27 @@ import os
 import sys
 import time
 import warnings
+
+import arff
+import joblib
 import numpy as np
 import scipy as sp
-from scipy.stats import rankdata
-from sklearn.base import clone
-import joblib
-
-import numpy as np
-from scipy.stats import rankdata
-from joblib import effective_n_jobs
-from sklearn.utils import check_array
-from sklearn.utils.validation import check_is_fitted
-
-from sklearn.preprocessing import StandardScaler
-from joblib import effective_n_jobs
 from joblib import Parallel, delayed
-from copy import deepcopy
-import arff
-
-from pyod.utils.utility import score_to_label
-from joblib import load
-from pyod.models.iforest import IForest
+from joblib import effective_n_jobs
 from pyod.models.abod import ABOD
-from pyod.models.feature_bagging import FeatureBagging
-from pyod.models.lof import LOF
 from pyod.models.cblof import CBLOF
+from pyod.models.feature_bagging import FeatureBagging
+from pyod.models.hbos import HBOS
+from pyod.models.iforest import IForest
+from pyod.models.knn import KNN
+from pyod.models.lof import LOF
+from pyod.models.mcd import MCD
 from pyod.models.ocsvm import OCSVM
 from pyod.models.pca import PCA
-from pyod.models.knn import KNN
-from pyod.models.hbos import HBOS
-from pyod.models.mcd import MCD
-from pyod.models.lscp import LSCP
+from scipy.stats import rankdata
+from sklearn.base import clone
+from sklearn.preprocessing import StandardScaler
+from sklearn.utils import check_array
 
 if not sys.warnoptions:
     warnings.simplefilter("ignore")
@@ -147,7 +137,7 @@ def _partition_estimators(n_estimators, n_jobs):
 
     # Partition estimators between jobs
     n_estimators_per_job = np.full(n_jobs, n_estimators // n_jobs,
-                                   dtype=np.int)
+                                   dtype=int)
     n_estimators_per_job[:n_estimators % n_jobs] += 1
     starts = np.cumsum(n_estimators_per_job)
 
@@ -317,6 +307,7 @@ if __name__ == "__main__":
         base_estimator_names.append(idx_clf_mapping[i])
 
     this_directory = os.path.abspath(os.path.dirname(__file__))
+
     cost_forecast_loc_fit_ = os.path.join(
         this_directory, 'saved_models', 'bps_train.joblib')
 

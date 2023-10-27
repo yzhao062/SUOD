@@ -199,16 +199,12 @@ If you use SUOD in a scientific publication, we would appreciate citations to th
 
 ----
 
+
+
 .. rubric:: References
 
 .. bibliography::
    :cited:
+   :labelprefix: A
+   :keyprefix: a-
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

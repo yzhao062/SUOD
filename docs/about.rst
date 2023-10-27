@@ -5,7 +5,7 @@ About us
 Core Development Team
 ---------------------
 
-Yue Zhao (initialized the project in Jan 2020): `Homepage <https://www.andrew.cmu.edu/user/yuezhao2/>`_
+Yue Zhao (initialized the project in Jan 2020): `Homepage <https://viterbi-web.usc.edu/~yzhao010/>`_
 
 Xiyang Hu (initialized the project in Jan 2020): `Homepage <https://www.andrew.cmu.edu/user/xiyanghu/>`_
 

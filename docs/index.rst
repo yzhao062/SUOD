@@ -50,16 +50,6 @@ Welcome to SUOD's documentation!
    :alt: testing
 
 
-.. image:: https://circleci.com/gh/yzhao062/SUOD.svg?style=svg
-   :target: https://circleci.com/gh/yzhao062/SUOD
-   :alt: Circle CI
-
-
-.. image:: https://ci.appveyor.com/api/projects/status/5kp8psvntp5m1d6m/branch/master?svg=true
-   :target: https://ci.appveyor.com/project/yzhao062/combo/branch/master
-   :alt: Appveyor
-
-
 .. image:: https://coveralls.io/repos/github/yzhao062/SUOD/badge.svg
    :target: https://coveralls.io/github/yzhao062/SUOD
    :alt: Coverage Status

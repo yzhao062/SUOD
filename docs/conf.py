@@ -45,7 +45,8 @@ extensions = [
     'sphinx.ext.imgmath',
     'sphinx.ext.viewcode',
     'sphinxcontrib.bibtex',
-    'sphinx.ext.napoleon',
+    # 'sphinx.ext.napoleon',
+    # 'sphinx_rtd_theme',
 ]
 
 bibtex_bibfiles = ['zreferences.bib']
@@ -62,11 +63,17 @@ source_suffix = '.rst'
 # The master toctree document.
 master_doc = 'index'
 
+# This is also used if you do content translation via gettext catalogs.
+# Usually you set "language" from the command line for these cases.
+language = None
+
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
+# The name of the Pygments (syntax highlighting) style to use.
+pygments_style = 'sphinx'
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -134,7 +141,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'suod.tex', 'SUOD Documentation',
+    (master_doc, 'suod.tex', 'suod Documentation',
      'Yue Zhao', 'manual'),
 ]
 
@@ -143,7 +150,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'suod', 'SUOD Documentation',
+    (master_doc, 'suod', 'suod Documentation',
      [author], 1)
 ]
 
@@ -153,8 +160,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'suod', 'SUOD Documentation',
-     author, 'SUOD', 'One line description of project.',
+    (master_doc, 'suod', 'suod Documentation',
+     author, 'suod', 'One line description of project.',
      'Miscellaneous'),
 ]
 

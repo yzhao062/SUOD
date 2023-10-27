@@ -17,6 +17,9 @@ from sklearn.utils import check_array
 
 import joblib
 from joblib import Parallel, delayed, effective_n_jobs
+from joblib.externals.loky.backend.context import set_start_method
+set_start_method('spawn')
+# need to do this to fix issue on Python 3.7
 
 from pyod.models.sklearn_base import _pprint
 from pyod.utils.utility import check_parameter

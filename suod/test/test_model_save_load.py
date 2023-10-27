@@ -4,8 +4,6 @@ import sys
 
 import unittest
 
-import numpy as np
-
 # temporary solution for relative imports in case pyod is not installed
 # if suod
 # is installed, no need to use the following line
@@ -19,7 +17,7 @@ from pyod.models.hbos import HBOS
 from pyod.models.lscp import LSCP
 from joblib import dump, load
 
-from ..utils.utility import _get_sklearn_version
+from suod.utils.utility import _get_sklearn_version
 
 
 class TestModelSaveLoad(unittest.TestCase):

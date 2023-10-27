@@ -30,7 +30,7 @@ setup(
     long_description=readme(),
     long_description_content_type='text/x-rst',
     author='Yue Zhao',
-    author_email='zhaoy@cmu.edu',
+    author_email='yzhao062@gmail.com',
     url='https://github.com/yzhao062/suod',
     download_url='https://github.com/yzhao062/suod/archive/master.zip',
     keywords=['ensemble learning', 'anomaly detection', 'outlier ensembles',
@@ -40,7 +40,7 @@ setup(
     install_requires=requirements,
     setup_requires=['setuptools>=38.6.0'],
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Education',
         'Intended Audience :: Financial and Insurance Industry',
         'Intended Audience :: Science/Research',

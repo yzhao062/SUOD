@@ -296,7 +296,7 @@ class SUOD(object):
         # https://github.com/joblib/joblib/issues/806
         # a fix is on the way: https://github.com/joblib/joblib/pull/966
         # max_nbytes can be dropped on other OS
-        all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
+        all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=self.verbose)(
             delayed(_parallel_fit)(
                 n_estimators_list[i],
                 self.base_estimators[starts[i]:starts[i + 1]],
@@ -349,7 +349,7 @@ class SUOD(object):
         n_estimators_list, starts, n_jobs = _partition_estimators(
             self.n_estimators, n_jobs=self.n_jobs, verbose=self.verbose)
 
-        all_approx_results = Parallel(n_jobs=n_jobs, verbose=True)(
+        all_approx_results = Parallel(n_jobs=n_jobs, verbose=self.verbose)(
             delayed(_parallel_approx_estimators)(
                 n_estimators_list[i],
                 self.base_estimators[starts[i]:starts[i + 1]],
@@ -358,7 +358,7 @@ class SUOD(object):
                 self.approx_flags[starts[i]:starts[i + 1]],
                 self.approx_clf,
                 self.jl_transformers_[starts[i]:starts[i + 1]],
-                verbose=True)
+                verbose=self.verbose)
             for i in range(n_jobs))
 
         # print('Balanced Scheduling Total Test Time:', time.time() - start)
@@ -409,7 +409,7 @@ class SUOD(object):
         # https://github.com/joblib/joblib/issues/806
         # max_nbytes can be dropped on other OS
         all_results_pred = Parallel(n_jobs=n_jobs, max_nbytes=None,
-                                    verbose=True)(
+                                    verbose=self.verbose)(
             delayed(_parallel_predict)(
                 n_estimators_list[i],
                 self.base_estimators[starts[i]:starts[i + 1]],
@@ -420,7 +420,7 @@ class SUOD(object):
                 self.jl_transformers_[starts[i]:starts[i + 1]],
                 self.approx_flags[starts[i]:starts[i + 1]],
                 self.contamination,
-                verbose=True)
+                verbose=self.verbose)
             for i in range(n_jobs))
 
         if self.verbose:
@@ -481,7 +481,7 @@ class SUOD(object):
         # https://github.com/joblib/joblib/issues/806
         # max_nbytes can be dropped on other OS
         all_results_scores = Parallel(n_jobs=n_jobs, max_nbytes=None,
-                                      verbose=True)(
+                                      verbose=self.verbose)(
             delayed(_parallel_decision_function)(
                 n_estimators_list[i],
                 self.base_estimators[starts[i]:starts[i + 1]],
@@ -491,7 +491,7 @@ class SUOD(object):
                 # self.rp_flags[starts[i]:starts[i + 1]],
                 self.jl_transformers_[starts[i]:starts[i + 1]],
                 self.approx_flags[starts[i]:starts[i + 1]],
-                verbose=True)
+                verbose=self.verbose)
             for i in range(n_jobs))
 
         # fit the base models
@@ -557,7 +557,7 @@ class SUOD(object):
         # https://github.com/joblib/joblib/issues/806
         # max_nbytes can be dropped on other OS
         all_results_scores = Parallel(n_jobs=n_jobs, max_nbytes=None,
-                                      verbose=True)(
+                                      verbose=self.verbose)(
             delayed(_parallel_predict_proba)(
                 n_estimators_list[i],
                 self.base_estimators[starts[i]:starts[i + 1]],
@@ -567,7 +567,7 @@ class SUOD(object):
                 # self.rp_flags[starts[i]:starts[i + 1]],
                 self.jl_transformers_[starts[i]:starts[i + 1]],
                 self.approx_flags[starts[i]:starts[i + 1]],
-                verbose=True)
+                verbose=self.verbose)
             for i in range(n_jobs))
 
         # fit the base models

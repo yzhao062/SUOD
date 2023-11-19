@@ -17,86 +17,83 @@ from pyod.models.hbos import HBOS
 from pyod.models.lscp import LSCP
 from joblib import dump, load
 
-from suod.utils.utility import _get_sklearn_version
+
+from suod.models.base import load_predictor_train
+from suod.models.base import load_predictor_prediction
 
 
 class TestModelSaveLoad(unittest.TestCase):
-    def setUp(self):
-        self.n_train = 1000
-        self.n_test = 500
-        self.contamination = 0.1
-        self.roc_floor = 0.6
-        self.random_state = 42
-        self.X_train, self.X_test, self.y_train, self.y_test = generate_data(
-            n_train=self.n_train, n_test=self.n_test, behaviour='new',
-            contamination=self.contamination, random_state=self.random_state)
+	def setUp(self):
+		self.n_train = 1000
+		self.n_test = 500
+		self.contamination = 0.1
+		self.roc_floor = 0.6
+		self.random_state = 42
+		self.X_train, self.X_test, self.y_train, self.y_test = generate_data(
+			n_train=self.n_train, n_test=self.n_test, behaviour='new',
+			contamination=self.contamination, random_state=self.random_state)
 
-        self.base_estimators = [
-            LOF(n_neighbors=5, contamination=self.contamination),
-            LOF(n_neighbors=15, contamination=self.contamination),
-            LOF(n_neighbors=25, contamination=self.contamination),
-            LOF(n_neighbors=35, contamination=self.contamination),
-            LOF(n_neighbors=45, contamination=self.contamination),
-            HBOS(contamination=self.contamination),
-            PCA(contamination=self.contamination),
-            LSCP(detector_list=[
-                LOF(n_neighbors=5, contamination=self.contamination),
-                LOF(n_neighbors=15, contamination=self.contamination)],
-                random_state=self.random_state)
-        ]
+		self.base_estimators = [
+			LOF(n_neighbors=5, contamination=self.contamination),
+			LOF(n_neighbors=15, contamination=self.contamination),
+			LOF(n_neighbors=25, contamination=self.contamination),
+			LOF(n_neighbors=35, contamination=self.contamination),
+			LOF(n_neighbors=45, contamination=self.contamination),
+			HBOS(contamination=self.contamination),
+			PCA(contamination=self.contamination),
+			LSCP(detector_list=[
+				LOF(n_neighbors=5, contamination=self.contamination),
+				LOF(n_neighbors=15, contamination=self.contamination)],
+				random_state=self.random_state)
+		]
 
-        this_directory = os.path.abspath(os.path.dirname(__file__))
+		this_directory = os.path.abspath(os.path.dirname(__file__))
 
-        sklearn_version = _get_sklearn_version()
-        if sklearn_version[:3] >= '1.3':
-            self.cost_forecast_loc_fit_ = os.path.join(this_directory,
-                                                       'bps_train.joblib')
+		self.cost_forecast_loc_fit_ = load_predictor_train(
+			os.path.join(this_directory,
+						 'saved_models/bps_train.joblib'))
 
-            self.cost_forecast_loc_pred_ = os.path.join(this_directory,
-                                                        'bps_prediction.joblib')
-        else:
-            self.cost_forecast_loc_fit_ = os.path.join(this_directory,
-                                                       'bps_train_old.joblib')
+		self.cost_forecast_loc_pred_ = load_predictor_prediction(
+			os.path.join(this_directory,
+						 'saved_models/bps_prediction.joblib'))
 
-            self.cost_forecast_loc_pred_ = os.path.join(this_directory,
-                                                        'bps_prediction_old.joblib')
+		self.model = SUOD(base_estimators=self.base_estimators, n_jobs=2,
+						  rp_flag_global=True, bps_flag=True,
+						  contamination=self.contamination,
+						  approx_flag_global=True,
+						  cost_forecast_loc_fit=self.cost_forecast_loc_fit_,
+						  cost_forecast_loc_pred=self.cost_forecast_loc_pred_,
+						  verbose=True)
 
-        self.model = SUOD(base_estimators=self.base_estimators, n_jobs=2,
-                          rp_flag_global=True, bps_flag=True,
-                          contamination=self.contamination,
-                          approx_flag_global=True,
-                          cost_forecast_loc_fit=self.cost_forecast_loc_fit_,
-                          cost_forecast_loc_pred=self.cost_forecast_loc_pred_,
-                          verbose=True)
+	def test_save(self):
+		self.model.fit(self.X_train)  # fit all models with X
+		self.model.approximate(
+			self.X_train)  # conduct model approximation if it is enabled
 
-    def test_save(self):
-        self.model.fit(self.X_train)  # fit all models with X
-        self.model.approximate(
-            self.X_train)  # conduct model approximation if it is enabled
+		# save the model
+		dump(self.model, 'model.joblib')
+		assert (os.path.exists('model.joblib'))
+		os.remove('model.joblib')
 
-        # save the model
-        dump(self.model, 'model.joblib')
-        assert (os.path.exists('model.joblib'))
-        os.remove('model.joblib')
+	def test_load(self):
+		self.model.fit(self.X_train)  # fit all models with X
+		self.model.approximate(
+			self.X_train)  # conduct model approximation if it is enabled
 
-    def test_load(self):
-        self.model.fit(self.X_train)  # fit all models with X
-        self.model.approximate(
-            self.X_train)  # conduct model approximation if it is enabled
+		# save the model
+		dump(self.model, 'model.joblib')
+		model = load('model.joblib')
 
-        # save the model
-        dump(self.model, 'model.joblib')
-        model = load('model.joblib')
+		predicted_labels = model.predict(self.X_test)  # predict labels
+		predicted_scores = model.decision_function(
+			self.X_test)  # predict scores
+		predicted_probs = model.predict_proba(self.X_test)  # predict scores
 
-        predicted_labels = model.predict(self.X_test)  # predict labels
-        predicted_scores = model.decision_function(
-            self.X_test)  # predict scores
-        predicted_probs = model.predict_proba(self.X_test)  # predict scores
+		assert (len(predicted_labels) != 0)
 
-        assert (len(predicted_labels) != 0)
-        # assert (predicted_scores)
-        # assert (predicted_probs)
+	# assert (predicted_scores)
+	# assert (predicted_probs)
 
-    def tearDown(self):
-        if os.path.exists('model.joblib'):
-            os.remove('model.joblib')
+	def tearDown(self):
+		if os.path.exists('model.joblib'):
+			os.remove('model.joblib')

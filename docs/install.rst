@@ -22,18 +22,10 @@ Alternatively, you could clone and run setup.py file:
 **Required Dependencies**\ :
 
 
-* Python 3.5, 3.6, or 3.7
+* Python 3.8+
 * joblib
 * numpy>=1.13
 * pandas (**optional for building the cost forecast model**)
 * pyod
 * scipy>=0.19.1
-* scikit_learn>=0.19.1
-
-
-**Note on Python 2**\ :
-The maintenance of Python 2.7 has stopped since January 1, 2020 (see `official announcement <https://github.com/python/devguide/pull/344>`_).
-To be consistent with the Python change and SUOD's dependent libraries, e.g., scikit-learn,
-**SUOD only supports Python 3.5+** and we encourage you to use
-Python 3.5 or newer for the latest functions and bug fixes. More information can
-be found at `Moving to require Python 3 <https://python3statement.org/>`_.
+* scikit_learn>=1.0

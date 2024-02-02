@@ -108,7 +108,7 @@ def build_cost_predictor(file_name, output_file, save_to_local=True):
         pearson.append(pearsonr(y_test, test_pred)[0])
         spearman.append(spearmanr(y_test, test_pred)[0])
 
-    print('Spearman Rank', np.mean(spearman))
+    # print('Spearman Rank', np.mean(spearman))
 
     clf.fit(X, y)
 
@@ -121,9 +121,9 @@ if __name__ == "__main__":
     # this should be only executed if the pre-trained model is missing.
     build_cost_predictor(
         file_name=os.path.join('saved_models', 'summary_train.txt'),
-        output_file="bps_train.joblib",
+        output_file="bps_train_curr.joblib",
         save_to_local=False)
     build_cost_predictor(
         file_name=os.path.join('saved_models', 'summary_prediction.txt'),
-        output_file="bps_prediction.joblib",
+        output_file="bps_prediction_curr.joblib",
         save_to_local=False)

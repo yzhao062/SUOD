@@ -25,6 +25,7 @@ set_start_method('spawn')
 from pyod.models.sklearn_base import _pprint
 from pyod.utils.utility import check_parameter
 
+from suod.models.cost_predictor import build_cost_predictor
 from suod.models.parallel_processes import cost_forecast_meta
 from suod.models.parallel_processes import balanced_scheduling
 from suod.models.parallel_processes import _parallel_fit
@@ -33,7 +34,7 @@ from suod.models.parallel_processes import _parallel_predict_proba
 from suod.models.parallel_processes import _parallel_decision_function
 from suod.models.parallel_processes import _partition_estimators
 from suod.models.parallel_processes import _parallel_approx_estimators
-from ..utils.utility import _unfold_parallel, build_codes, _get_sklearn_version
+from ..utils.utility import _unfold_parallel, build_codes
 
 import warnings
 from collections import defaultdict
@@ -43,36 +44,6 @@ sys.path.append(
 	os.path.abspath(os.path.join(os.path.dirname("__file__"), '..')))
 
 from inspect import signature
-
-
-def load_predictor_train(cost_forecast_loc_fit):
-	this_directory = os.path.abspath(os.path.dirname(__file__))
-
-	# validate the trained model
-	if cost_forecast_loc_fit is None:
-		try:
-			cost_predictor = joblib.load(os.path.join(
-				this_directory, 'saved_models', 'bps_train.joblib'))
-		except KeyError:
-			cost_predictor = joblib.load(os.path.join(
-				this_directory, 'saved_models', 'bps_train_old.joblib'))
-
-		return cost_predictor
-
-
-def load_predictor_prediction(cost_forecast_loc_pred):
-	this_directory = os.path.abspath(os.path.dirname(__file__))
-
-	# validate the trained model
-	if cost_forecast_loc_pred is None:
-		try:
-			cost_predictor = joblib.load(os.path.join(
-				this_directory, 'saved_models', 'bps_prediction.joblib'))
-		except KeyError:
-			cost_predictor = joblib.load(os.path.join(
-				this_directory, 'saved_models', 'bps_prediction_old.joblib'))
-
-		return cost_predictor
 
 
 # noinspection PyPep8
@@ -142,11 +113,6 @@ class SUOD(object):
 	approx_clf : object, optional (default: sklearn RandomForestRegressor)
 		The supervised model used to approximate unsupervised models.
 
-	cost_forecast_loc_fit : str, optional
-		The location of the pretrained cost prediction forecast for training.
-
-	cost_forecast_loc_pred : str, optional
-		The location of the pretrained cost prediction forecast for prediction.
 
 	verbose : bool, optional (default=False)
 		Controls the verbosity of the building process.
@@ -157,7 +123,6 @@ class SUOD(object):
 				 target_dim_frac=0.5, jl_method='basic', bps_flag=True,
 				 approx_clf_list=None, approx_ng_clf_list=None,
 				 approx_flag_global=True, approx_clf=None,
-				 cost_forecast_loc_fit=None, cost_forecast_loc_pred=None,
 				 verbose=False):
 
 		assert (isinstance(base_estimators, (list)))
@@ -172,8 +137,6 @@ class SUOD(object):
 		self.verbose = verbose
 		self.approx_flag_global = approx_flag_global
 		self.contamination = contamination
-		self.cost_forecast_loc_fit = cost_forecast_loc_fit
-		self.cost_forecast_loc_pred = cost_forecast_loc_pred
 
 		self._parameter_validation(contamination, n_jobs, rp_clf_list,
 								   rp_ng_clf_list, approx_clf_list,
@@ -245,29 +208,6 @@ class SUOD(object):
 		else:
 			self.approx_ng_clf_list = approx_ng_clf_list
 
-		# this_directory = os.path.abspath(os.path.dirname(__file__))
-		#
-		# # validate the trained model
-		# if cost_forecast_loc_fit is None:
-		#
-		#     sklearn_version = _get_sklearn_version()
-		#     if sklearn_version[:3] >= '1.3':
-		#         self.cost_forecast_loc_fit_ = os.path.join(
-		#             this_directory, 'saved_models', 'bps_train.joblib')
-		#     else:
-		#         self.cost_forecast_loc_fit_ = os.path.join(
-		#             this_directory, 'saved_models', 'bps_train_old.joblib')
-		# else:
-		#     self.cost_forecast_loc_fit_ = cost_forecast_loc_fit
-		#
-		# if cost_forecast_loc_pred is None:
-		#     self.cost_forecast_loc_pred_ = os.path.join(
-		#         this_directory, 'saved_models', 'bps_prediction.joblib')
-		# else:
-		#     self.cost_forecast_loc_pred_ = cost_forecast_loc_pred
-		#
-		# return self
-
 	def fit(self, X):
 		"""Fit all base estimators.
 
@@ -303,7 +243,16 @@ class SUOD(object):
 		# it is turned off
 		if self.bps_flag:
 			# load the pre-trained cost predictor to forecast the train cost
-			cost_predictor = load_predictor_train(self.cost_forecast_loc_fit)
+			this_directory = os.path.abspath(os.path.dirname(__file__))
+			train_file = os.path.join(this_directory, "saved_models",
+									  "bps_train_curr.joblib")
+			build_cost_predictor(
+				file_name=os.path.join(this_directory, 'saved_models',
+									   'summary_train.txt'),
+				output_file=train_file,
+				save_to_local=True)
+
+			cost_predictor = joblib.load(train_file)
 
 			print(cost_predictor)
 			time_cost_pred = cost_forecast_meta(cost_predictor, X,
@@ -327,7 +276,7 @@ class SUOD(object):
 		# https://github.com/joblib/joblib/issues/806
 		# a fix is on the way: https://github.com/joblib/joblib/pull/966
 		# max_nbytes can be dropped on other OS
-		all_results = Parallel(n_jobs=n_jobs, max_nbytes=None, verbose=True)(
+		all_results = Parallel(n_jobs=n_jobs, verbose=True)(
 			delayed(_parallel_fit)(
 				n_estimators_list[i],
 				self.base_estimators[starts[i]:starts[i + 1]],
@@ -418,9 +367,19 @@ class SUOD(object):
 		# decide whether bps is needed
 		# it is turned off
 		if self.bps_flag:
+
+			this_directory = os.path.abspath(os.path.dirname(__file__))
+			prediction_file = os.path.join(this_directory, "saved_models",
+										   "bps_prediction_curr.joblib")
+
+			build_cost_predictor(
+				file_name=os.path.join(this_directory, 'saved_models',
+									   'summary_prediction.txt'),
+				output_file=prediction_file,
+				save_to_local=True)
+
 			# load the pre-trained cost predictor to forecast the train cost
-			cost_predictor = load_predictor_prediction(
-				self.cost_forecast_loc_pred)
+			cost_predictor = joblib.load(prediction_file)
 
 			time_cost_pred = cost_forecast_meta(cost_predictor, X,
 												self.base_estimator_names)
@@ -437,10 +396,7 @@ class SUOD(object):
 			print('Parallel label prediction...')
 			start = time.time()
 
-		# TODO: code cleanup. There is an existing bug for joblib on Windows:
-		# https://github.com/joblib/joblib/issues/806
-		# max_nbytes can be dropped on other OS
-		all_results_pred = Parallel(n_jobs=n_jobs, max_nbytes=None,
+		all_results_pred = Parallel(n_jobs=n_jobs,
 									verbose=True)(
 			delayed(_parallel_predict)(
 				n_estimators_list[i],
@@ -492,8 +448,18 @@ class SUOD(object):
 		# it is turned off
 		if self.bps_flag:
 			# load the pre-trained cost predictor to forecast the train cost
-			cost_predictor = load_predictor_prediction(
-				self.cost_forecast_loc_pred)
+			this_directory = os.path.abspath(os.path.dirname(__file__))
+			prediction_file = os.path.join(this_directory, "saved_models",
+										   "bps_prediction_curr.joblib")
+
+			build_cost_predictor(
+				file_name=os.path.join(this_directory, 'saved_models',
+									   'summary_prediction.txt'),
+				output_file=prediction_file,
+				save_to_local=True)
+
+			# load the pre-trained cost predictor to forecast the train cost
+			cost_predictor = joblib.load(prediction_file)
 
 			time_cost_pred = cost_forecast_meta(cost_predictor, X,
 												self.base_estimator_names)
@@ -510,10 +476,7 @@ class SUOD(object):
 			print('Parallel score prediction...')
 			start = time.time()
 
-		# TODO: code cleanup. There is an existing bug for joblib on Windows:
-		# https://github.com/joblib/joblib/issues/806
-		# max_nbytes can be dropped on other OS
-		all_results_scores = Parallel(n_jobs=n_jobs, max_nbytes=None,
+		all_results_scores = Parallel(n_jobs=n_jobs,
 									  verbose=True)(
 			delayed(_parallel_decision_function)(
 				n_estimators_list[i],
@@ -568,9 +531,18 @@ class SUOD(object):
 		# decide whether bps is needed
 		# it is turned off
 		if self.bps_flag:
+			this_directory = os.path.abspath(os.path.dirname(__file__))
+			prediction_file = os.path.join(this_directory, "saved_models",
+										   "bps_prediction_curr.joblib")
+
+			build_cost_predictor(
+				file_name=os.path.join(this_directory, 'saved_models',
+									   'summary_prediction.txt'),
+				output_file=prediction_file,
+				save_to_local=True)
+
 			# load the pre-trained cost predictor to forecast the train cost
-			cost_predictor = load_predictor_prediction(
-				self.cost_forecast_loc_pred)
+			cost_predictor = joblib.load(prediction_file)
 
 			time_cost_pred = cost_forecast_meta(cost_predictor, X,
 												self.base_estimator_names)
@@ -587,10 +559,7 @@ class SUOD(object):
 			print('Parallel score prediction...')
 			start = time.time()
 
-		# TODO: code cleanup. There is an existing bug for joblib on Windows:
-		# https://github.com/joblib/joblib/issues/806
-		# max_nbytes can be dropped on other OS
-		all_results_scores = Parallel(n_jobs=n_jobs, max_nbytes=None,
+		all_results_scores = Parallel(n_jobs=n_jobs,
 									  verbose=True)(
 			delayed(_parallel_predict_proba)(
 				n_estimators_list[i],

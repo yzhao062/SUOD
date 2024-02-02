@@ -18,8 +18,8 @@ from pyod.models.lof import LOF
 from pyod.models.pca import PCA
 from pyod.models.hbos import HBOS
 from pyod.models.lscp import LSCP
-from suod.models.base import load_predictor_train
-from suod.models.base import load_predictor_prediction
+from suod.models.cost_predictor import build_cost_predictor
+import joblib
 
 
 class TestBASE(unittest.TestCase):
@@ -47,22 +47,10 @@ class TestBASE(unittest.TestCase):
 				random_state=self.random_state)
 		]
 
-		this_directory = os.path.abspath(os.path.dirname(__file__))
-
-		self.cost_forecast_loc_fit_ = load_predictor_train(
-			os.path.join(this_directory,
-						 'saved_models/bps_train.joblib'))
-
-		self.cost_forecast_loc_pred_ = load_predictor_prediction(
-			os.path.join(this_directory,
-						 'saved_models/bps_prediction.joblib'))
-
 		self.model = SUOD(base_estimators=self.base_estimators, n_jobs=2,
 						  rp_flag_global=True, bps_flag=True,
 						  contamination=self.contamination,
 						  approx_flag_global=True,
-						  cost_forecast_loc_fit=self.cost_forecast_loc_fit_,
-						  cost_forecast_loc_pred=self.cost_forecast_loc_pred_,
 						  verbose=True)
 
 	def test_initialization(self):

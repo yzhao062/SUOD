@@ -18,10 +18,6 @@ from pyod.models.lscp import LSCP
 from joblib import dump, load
 
 
-from suod.models.base import load_predictor_train
-from suod.models.base import load_predictor_prediction
-
-
 class TestModelSaveLoad(unittest.TestCase):
 	def setUp(self):
 		self.n_train = 1000
@@ -47,22 +43,10 @@ class TestModelSaveLoad(unittest.TestCase):
 				random_state=self.random_state)
 		]
 
-		this_directory = os.path.abspath(os.path.dirname(__file__))
-
-		self.cost_forecast_loc_fit_ = load_predictor_train(
-			os.path.join(this_directory,
-						 'saved_models/bps_train.joblib'))
-
-		self.cost_forecast_loc_pred_ = load_predictor_prediction(
-			os.path.join(this_directory,
-						 'saved_models/bps_prediction.joblib'))
-
 		self.model = SUOD(base_estimators=self.base_estimators, n_jobs=2,
 						  rp_flag_global=True, bps_flag=True,
 						  contamination=self.contamination,
 						  approx_flag_global=True,
-						  cost_forecast_loc_fit=self.cost_forecast_loc_fit_,
-						  cost_forecast_loc_pred=self.cost_forecast_loc_pred_,
 						  verbose=True)
 
 	def test_save(self):

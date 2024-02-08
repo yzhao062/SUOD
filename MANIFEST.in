@@ -4,7 +4,7 @@ prune suod/test
 include README.rst
 include requirements.txt
 include suod/models
-include suod/models/saved_models/bps_prediction.joblib
-include suod/models/saved_models/bps_train.joblib
-include suod/models/saved_models/bps_prediction_old.joblib
-include suod/models/saved_models/bps_train_old.joblib
+include suod/models/saved_models/summary_prediction.txt
+include suod/models/saved_models/summary_prediction.xlsx
+include suod/models/saved_models/summary_train.txt
+include suod/models/saved_models/summary_train.xlsx
